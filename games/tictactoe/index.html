@@ -648,23 +648,39 @@ const ui = (() => {
     showGame();
   }
 
+  // --- Normalize state from Firebase ---
+  // Firebase stores arrays as objects with numeric keys.
+  // This converts them back to real JS arrays.
+  function normalizeState(state) {
+    if (!state) return state;
+    if (state.board && !Array.isArray(state.board)) {
+      state.board = Object.values(state.board);
+    }
+    return state;
+  }
+
   // --- Start / join a remote game ---
   function startRemoteGame(gameId, state) {
-    isLocal = false;
-    currentGameId = gameId;
-    currentState = state;
-    currentRole = identity.getRole(state);
-    ui.buildBoard(handleMove);
-    ui.renderBoard(currentState);
-    ui.renderStatus(currentState, currentRole);
-    showGame();
-
-    syncAdapter.onStateChange(gameId, remoteState => {
-      currentState = remoteState;
-      currentRole  = identity.getRole(remoteState);
+    try {
+      isLocal = false;
+      currentGameId = gameId;
+      currentState = normalizeState(state);
+      currentRole = identity.getRole(currentState);
+      ui.buildBoard(handleMove);
       ui.renderBoard(currentState);
       ui.renderStatus(currentState, currentRole);
-    });
+      showGame();
+
+      syncAdapter.onStateChange(gameId, remoteState => {
+        currentState = normalizeState(remoteState);
+        currentRole  = identity.getRole(currentState);
+        ui.renderBoard(currentState);
+        ui.renderStatus(currentState, currentRole);
+      });
+    } catch(err) {
+      console.error('startRemoteGame error:', err);
+      document.getElementById('lobby-status').textContent = 'Something went wrong. Please try again.';
+    }
   }
 
   // --- Lobby: Create a new remote game ---
@@ -730,15 +746,10 @@ const ui = (() => {
         syncAdapter.push(gameId, state);
       }
 
-      // Don't use the local state object — let Firebase deliver the first
-      // clean snapshot via onStateChange, which guarantees board is populated
+      // Transition immediately with the state we already have —
+      // the onStateChange listener inside startRemoteGame handles updates
       document.getElementById('lobby-status').textContent = 'Joined! Starting game…';
-      syncAdapter.onStateChange(gameId, freshState => {
-        if (freshState.board) {
-          syncAdapter.unsubscribe();
-          startRemoteGame(gameId, freshState);
-        }
-      });
+      startRemoteGame(gameId, state);
 
     }).catch(err => {
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
