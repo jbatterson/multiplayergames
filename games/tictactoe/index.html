@@ -730,12 +730,19 @@ const ui = (() => {
         syncAdapter.push(gameId, state);
       }
 
-      // Both players now start — Firebase listener in startRemoteGame handles sync
-      startRemoteGame(gameId, state);
+      // Don't use the local state object — let Firebase deliver the first
+      // clean snapshot via onStateChange, which guarantees board is populated
+      document.getElementById('lobby-status').textContent = 'Joined! Starting game…';
+      syncAdapter.onStateChange(gameId, freshState => {
+        if (freshState.board) {
+          syncAdapter.unsubscribe();
+          startRemoteGame(gameId, freshState);
+        }
+      });
 
     }).catch(err => {
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
-      console.error('Firebase join error:', err.code, err.message, err);
+      console.error('Firebase join error:', err);
     });
   }
 
