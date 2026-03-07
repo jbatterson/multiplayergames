@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic-Tac-Toe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
+
+  <!--
+  ============================================================
+  SETUP INSTRUCTIONS
+  ============================================================
+  1. Go to https://console.firebase.google.com
+  2. Click "Add project", give it a name, disable Analytics if
+     you don't need it, and click through to create.
+  3. In the left sidebar, click "Build" > "Realtime Database".
+  4. Click "Create Database", choose any region, and when
+     prompted for security rules choose "Start in test mode"
+     (good for 30 days of open read/write — fine for a prototype).
+  5. In the left sidebar, click the gear icon > "Project settings".
+  6. Scroll to "Your apps", click the </> (Web) icon, register
+     an app (any nickname), and copy the firebaseConfig object.
+  7. Paste your config values into the FIREBASE CONFIG section
+     below, replacing each placeholder string.
+  ============================================================
+  -->
+
+  <style>
+    /* ============================================================
+       BASE STYLES — matching Scurry aesthetic
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #fff;
+      color: #000;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 28px 16px 40px;
+      overflow-x: hidden;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* --- Title --- */
+    .title {
+      font-weight: 900;
+      font-size: 2.25rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    /* --- Shared button style (mirrors Scurry btn-action) --- */
+    .btn {
+      width: 100%;
+      padding: 1rem 0;
+      border: 2px solid #000;
+      background: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+    }
+    .btn:hover:not(:disabled) { background: #000; color: #fff; }
+    .btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+    .btn-primary {
+      background: #000;
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+    }
+    .btn-primary:hover:not(:disabled) { background: #333; }
+
+    /* ============================================================
+       LOBBY SCREEN
+       ============================================================ */
+    #screen-lobby { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+
+    .lobby-divider {
+      width: 100%;
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #999;
+      margin: 0.25rem 0;
+    }
+
+    /* Link share panel */
+    #link-panel {
+      width: 100%;
+      border: 2px solid #000;
+      padding: 1rem;
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    #link-panel.visible { display: flex; }
+
+    .link-box {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+    #share-url {
+      flex: 1;
+      border: 2px solid #000;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem;
+      color: #000;
+      background: #f9f9f9;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #copy-btn {
+      width: auto;
+      padding: 0 1rem;
+      flex-shrink: 0;
+      font-size: 0.65rem;
+    }
+
+    .status-line {
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      min-height: 1em;
+    }
+
+    /* ============================================================
+       GAME SCREEN
+       ============================================================ */
+    #screen-game { width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+    /* Turn indicator */
+    .turn-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      margin-bottom: 1.5rem;
+      min-height: 3.5rem;
+      justify-content: center;
+    }
+    .turn-label {
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .turn-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: #FFD600;
+    }
+
+    /* Board */
+    #board-wrapper {
+      box-shadow: 0 0 0 2px #000;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .cell {
+      border: 2px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      aspect-ratio: 1;
+    }
+    .cell:hover { background: #fafafa; }
+
+    /* Remove double borders */
+    .cell:nth-child(1), .cell:nth-child(2), .cell:nth-child(3) { border-top: none; }
+    .cell:nth-child(1), .cell:nth-child(4), .cell:nth-child(7) { border-left: none; }
+    .cell:nth-child(3), .cell:nth-child(6), .cell:nth-child(9) { border-right: none; }
+    .cell:nth-child(7), .cell:nth-child(8), .cell:nth-child(9) { border-bottom: none; }
+
+    /* SVG markers */
+    .mark { width: 52%; height: 52%; pointer-events: none; }
+
+    /* Bottom controls */
+    .game-controls { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    /* ============================================================
+       UTILITY
+       ============================================================ */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <h1 class="title">Tic-Tac-Toe</h1>
+
+  <!-- ============================================================
+       LOBBY SCREEN
+       ============================================================ -->
+  <div id="screen-lobby">
+    <button class="btn" id="btn-local">Play on This Device</button>
+    <div class="lobby-divider">or</div>
+    <button class="btn" id="btn-challenge">Challenge a Friend</button>
+
+    <div id="link-panel">
+      <div class="link-box">
+        <div id="share-url"></div>
+        <button class="btn" id="copy-btn">Copy</button>
+      </div>
+      <div class="status-line" id="lobby-status">Waiting for your friend…</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       GAME SCREEN
+       ============================================================ -->
+  <div id="screen-game" class="hidden">
+    <div class="turn-indicator">
+      <div class="turn-label" id="turn-label">Your Turn</div>
+      <div class="turn-symbol" id="turn-symbol"></div>
+    </div>
+
+    <div id="board-wrapper">
+      <!-- 9 cells injected by JS -->
+    </div>
+
+    <div class="game-controls">
+      <div class="status-line" id="game-status"></div>
+      <button class="btn btn-primary hidden" id="btn-again">Play Again</button>
+      <button class="btn" id="btn-menu">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat version — simple global firebase object) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+"use strict";
+
+// ============================================================
+// SECTION 1 — CONFIG / CONSTANTS
+// ============================================================
+const CONFIG = {
+  gameIdLength: 4,          // characters in the URL game ID
+  gameIdChars: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', // unambiguous chars
+};
+
+// ============================================================
+// SECTION 2 — FIREBASE CONFIG
+// Replace these placeholder values with your own project's config.
+// Found in: Firebase Console > Project Settings > Your Apps > SDK setup
+// ============================================================
+
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
+  authDomain:        "multiplayer-tic-tac-toe-1611a.firebaseapp.com",
+  databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
+  projectId:         "multiplayer-tic-tac-toe-1611a",
+  storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
+  messagingSenderId: "896542207536",
+  appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
+};
+
+// ============================================================
+// SECTION 3 — SYNC ADAPTER
+// All Firebase-specific code lives here behind a fixed interface.
+// To swap backends, replace only this section.
+//
+// Interface:
+//   syncAdapter.push(gameId, state)         — write full game state
+//   syncAdapter.onStateChange(gameId, cb)   — subscribe to changes
+//   syncAdapter.unsubscribe(gameId)         — remove listener
+// ============================================================
+const syncAdapter = (() => {
+  let app, db;
+  let activeListener = null;
+  let activeRef = null;
+
+  function init() {
+    // Only initialize if config has been filled in
+    if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") return false;
+    try {
+      app = firebase.initializeApp(FIREBASE_CONFIG);
+      db  = firebase.database();
+      return true;
+    } catch(e) {
+      console.error("Firebase init failed:", e);
+      return false;
+    }
+  }
+
+  function push(gameId, state) {
+    if (!db) return;
+    db.ref(`games/${gameId}`).set(state);
+  }
+
+  function onStateChange(gameId, cb) {
+    if (!db) return;
+    unsubscribe();
+    activeRef = db.ref(`games/${gameId}`);
+    activeListener = activeRef.on('value', snap => {
+      if (snap.exists()) cb(snap.val());
+    });
+  }
+
+  function unsubscribe() {
+    if (activeRef && activeListener) {
+      activeRef.off('value', activeListener);
+      activeRef = null;
+      activeListener = null;
+    }
+  }
+
+  const ready = init();
+  return { push, onStateChange, unsubscribe, ready };
+})();
+
+// ============================================================
+// SECTION 4 — PLAYER IDENTITY
+// A random player ID is generated once and stored in localStorage.
+// When a game is created, this ID is assigned to playerX.
+// When a game is joined, this ID is assigned to playerO.
+// ============================================================
+const identity = (() => {
+  const STORAGE_KEY = 'ttt_player_id';
+  let id = localStorage.getItem(STORAGE_KEY);
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(STORAGE_KEY, id);
+  }
+  function getRole(state) {
+    if (state.playerX === id) return 'X';
+    if (state.playerO === id) return 'O';
+    return 'spectator';
+  }
+  return { id, getRole };
+})();
+
+// ============================================================
+// SECTION 5 — LOBBY / URL LOGIC
+// Handles game creation, link sharing, and joining.
+// ============================================================
+const lobby = (() => {
+  function generateId() {
+    let id = '';
+    for (let i = 0; i < CONFIG.gameIdLength; i++) {
+      id += CONFIG.gameIdChars[Math.floor(Math.random() * CONFIG.gameIdChars.length)];
+    }
+    return id;
+  }
+
+  function getGameIdFromUrl() {
+    return new URLSearchParams(window.location.search).get('game');
+  }
+
+  function buildShareUrl(gameId) {
+    const u = new URL(window.location.href);
+    u.search = '';
+    u.searchParams.set('game', gameId);
+    return u.toString();
+  }
+
+  function pushUrlState(gameId) {
+    const url = buildShareUrl(gameId);
+    window.history.replaceState({}, '', url);
+  }
+
+  return { generateId, getGameIdFromUrl, buildShareUrl, pushUrlState };
+})();
+
+// ============================================================
+// SECTION 6 — GAME ENGINE  ← cartridge (swap for other games)
+// Pure functions only — no DOM, no network calls.
+//
+// Exports:
+//   engine.initState()               — fresh board
+//   engine.applyMove(state, index, player) — returns new state or null if illegal
+//   engine.getStatus(state)          — { result: 'playing'|'win'|'draw', winner: 'X'|'O'|null }
+// ============================================================
+const engine = (() => {
+  const WIN_LINES = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6],         // diagonals
+  ];
+
+  function initState() {
+    return {
+      board:   Array(9).fill(null), // null | 'X' | 'O'
+      turn:    'X',
+      result:  'playing',           // 'playing' | 'win' | 'draw'
+      winner:  null,                // null | 'X' | 'O'
+      playerX: null,                // player ID strings
+      playerO: null,
+    };
+  }
+
+  function applyMove(state, index, player) {
+    // Reject illegal moves
+    if (state.result !== 'playing') return null;
+    if (state.turn !== player)      return null;
+    if (state.board[index] !== null) return null;
+
+    const board = [...state.board];
+    board[index] = player;
+
+    // Check win
+    for (const [a, b, c] of WIN_LINES) {
+      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+        return { ...state, board, result: 'win', winner: player };
+      }
+    }
+    // Check draw
+    if (board.every(sq => sq !== null)) {
+      return { ...state, board, result: 'draw', winner: null };
+    }
+    // Continue
+    return { ...state, board, turn: player === 'X' ? 'O' : 'X' };
+  }
+
+  function getStatus(state) {
+    return { result: state.result, winner: state.winner };
+  }
+
+  return { initState, applyMove, getStatus };
+})();
+
+// ============================================================
+// SECTION 7 — UI  ← cartridge (swap for other games)
+// Renders game state to DOM and wires up input.
+// Never calls Firebase directly — fires onMove(index) callback.
+// ============================================================
+const ui = (() => {
+  // --- SVG marker shapes ---
+  function svgX() {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', '0 0 100 100');
+    s.classList.add('mark');
+    const line = (x1,y1,x2,y2) => {
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      Object.assign(l, {});
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('stroke', '#000');
+      l.setAttribute('stroke-width', '12');
+      l.setAttribute('stroke-linecap', 'round');
+      s.appendChild(l);
+    };
+    line(18, 18, 82, 82);
+    line(82, 18, 18, 82);
+    return s;
+  }
+
+  function svgO() {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', '0 0 100 100');
+    s.classList.add('mark');
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', '50'); c.setAttribute('cy', '50'); c.setAttribute('r', '34');
+    c.setAttribute('fill', 'none');
+    c.setAttribute('stroke', '#000');
+    c.setAttribute('stroke-width', '12');
+    s.appendChild(c);
+    return s;
+  }
+
+  function markerFor(player) {
+    return player === 'X' ? svgX() : svgO();
+  }
+
+  // --- Build the board cells once ---
+  function buildBoard(onMove) {
+    const wrapper = document.getElementById('board-wrapper');
+    wrapper.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.index = i;
+      cell.addEventListener('click', () => onMove(i));
+      wrapper.appendChild(cell);
+    }
+  }
+
+  // --- Render state to the board ---
+  function renderBoard(state) {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell, i) => {
+      if (cell.children.length === 0 && state.board[i]) {
+        cell.appendChild(markerFor(state.board[i]));
+      }
+    });
+  }
+
+  // --- Render turn / status indicators ---
+  function renderStatus(state, role) {
+    const turnLabel  = document.getElementById('turn-label');
+    const turnSymbol = document.getElementById('turn-symbol');
+    const gameStatus = document.getElementById('game-status');
+    const btnAgain   = document.getElementById('btn-again');
+
+    // Clear symbol
+    turnSymbol.innerHTML = '';
+
+    if (state.result === 'playing') {
+      btnAgain.classList.add('hidden');
+      gameStatus.textContent = '';
+
+      if (role === 'spectator') {
+        turnLabel.textContent = `${state.turn}'s Turn`;
+        turnSymbol.appendChild(markerFor(state.turn));
+      } else if (state.turn === role) {
+        turnLabel.textContent = 'Your Turn';
+        turnSymbol.appendChild(markerFor(role));
+      } else {
+        turnLabel.textContent = "Friend's Turn";
+        turnSymbol.appendChild(markerFor(state.turn));
+      }
+    } else {
+      // Game over
+      turnLabel.textContent = '';
+      btnAgain.classList.remove('hidden');
+
+      if (state.result === 'draw') {
+        gameStatus.textContent = 'Draw!';
+      } else {
+        if (role === 'spectator') {
+          gameStatus.textContent = `${state.winner} Wins!`;
+        } else if (state.winner === role) {
+          gameStatus.textContent = 'You Win!';
+        } else {
+          gameStatus.textContent = 'You Lose.';
+        }
+      }
+    }
+  }
+
+  return { buildBoard, renderBoard, renderStatus, markerFor };
+})();
+
+// ============================================================
+// SECTION 8 — SHELL STARTUP
+// Wires lobby, identity, sync adapter, game engine, and UI together.
+// This section should not need to change when swapping cartridges.
+// ============================================================
+(function startup() {
+  // --- Screens ---
+  const screenLobby = document.getElementById('screen-lobby');
+  const screenGame  = document.getElementById('screen-game');
+
+  function showLobby() { screenLobby.classList.remove('hidden'); screenGame.classList.add('hidden'); }
+  function showGame()  { screenLobby.classList.add('hidden'); screenGame.classList.remove('hidden'); }
+
+  // --- Session state ---
+  let currentState = null;  // game state object
+  let currentRole  = 'X';   // 'X' | 'O' | 'spectator'
+  let currentGameId = null;
+  let isLocal = false;       // true = same-device, no Firebase
+
+  // --- Handle a move (called by UI click) ---
+  function handleMove(index) {
+    if (!currentState) return;
+
+    // Local game: apply move directly
+    if (isLocal) {
+      const next = engine.applyMove(currentState, index, currentState.turn);
+      if (!next) return;
+      currentState = next;
+      currentRole = currentState.turn; // role follows the board turn in local mode
+      ui.renderBoard(currentState);
+      ui.renderStatus(currentState, currentState.turn === 'X' ? 'O' : (currentState.result !== 'playing' ? currentState.winner || 'draw' : 'X'));
+      // Re-render with correct "whose perspective" — in local mode we show neutral status
+      renderLocal();
+      return;
+    }
+
+    // Remote game: only move on your turn
+    if (currentState.turn !== currentRole) return;
+    const next = engine.applyMove(currentState, index, currentRole);
+    if (!next) return;
+    // Preserve player IDs when pushing back
+    next.playerX = currentState.playerX;
+    next.playerO = currentState.playerO;
+    syncAdapter.push(currentGameId, next);
+    // Optimistic local update — Firebase will confirm
+    currentState = next;
+    ui.renderBoard(currentState);
+    ui.renderStatus(currentState, currentRole);
+  }
+
+  // --- Local game helpers ---
+  function renderLocal() {
+    // In local mode we show whose turn it is neutrally
+    const label = document.getElementById('turn-label');
+    const sym   = document.getElementById('turn-symbol');
+    sym.innerHTML = '';
+    if (currentState.result === 'playing') {
+      label.textContent = `${currentState.turn}'s Turn`;
+      sym.appendChild(ui.markerFor(currentState.turn));
+      document.getElementById('game-status').textContent = '';
+      document.getElementById('btn-again').classList.add('hidden');
+    } else {
+      label.textContent = '';
+      document.getElementById('btn-again').classList.remove('hidden');
+      if (currentState.result === 'draw') {
+        document.getElementById('game-status').textContent = 'Draw!';
+      } else {
+        document.getElementById('game-status').textContent = `${currentState.winner} Wins!`;
+      }
+    }
+  }
+
+  // --- Start a local game ---
+  function startLocalGame() {
+    isLocal = true;
+    syncAdapter.unsubscribe();
+    currentGameId = null;
+    currentState = engine.initState();
+    currentRole = 'X';
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState);
+    renderLocal();
+    showGame();
+  }
+
+  // --- Start / join a remote game ---
+  function startRemoteGame(gameId, state) {
+    isLocal = false;
+    currentGameId = gameId;
+    currentState = state;
+    currentRole = identity.getRole(state);
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState);
+    ui.renderStatus(currentState, currentRole);
+    showGame();
+
+    syncAdapter.onStateChange(gameId, remoteState => {
+      currentState = remoteState;
+      currentRole  = identity.getRole(remoteState);
+      ui.renderBoard(currentState);
+      ui.renderStatus(currentState, currentRole);
+    });
+  }
+
+  // --- Lobby: Create a new remote game ---
+  function createRemoteGame() {
+    if (!syncAdapter.ready) {
+      alert("Firebase isn't configured yet.\n\nOpen the HTML file and fill in your Firebase config in Section 2, or use 'Play on This Device' to play locally.");
+      return;
+    }
+    const gameId = lobby.generateId();
+    const state  = engine.initState();
+    state.playerX = identity.id;
+    lobby.pushUrlState(gameId);
+
+    const url = lobby.buildShareUrl(gameId);
+    document.getElementById('share-url').textContent = url;
+    document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
+
+    syncAdapter.push(gameId, state);
+
+    // Watch for Player 2 joining
+    syncAdapter.onStateChange(gameId, remoteState => {
+      if (remoteState.playerO) {
+        document.getElementById('lobby-status').textContent = 'Friend joined!';
+        syncAdapter.unsubscribe();
+        setTimeout(() => startRemoteGame(gameId, remoteState), 600);
+      }
+    });
+  }
+
+  // --- Lobby: Join an existing remote game ---
+  function joinRemoteGame(gameId) {
+    if (!syncAdapter.ready) {
+      alert("Firebase isn't configured yet.\n\nAsk your friend to run this on a configured server, or both use 'Play on This Device'.");
+      return;
+    }
+    // Read game once, assign playerO if slot is open
+    const ref = firebase.database().ref(`games/${gameId}`);
+    ref.once('value').then(snap => {
+      if (!snap.exists()) {
+        alert("Game not found. The link may be expired.");
+        return;
+      }
+      const state = snap.val();
+      // If this player is already X (opened their own link again), just join
+      if (state.playerX === identity.id) {
+        startRemoteGame(gameId, state);
+        return;
+      }
+      // Claim O slot if empty
+      if (!state.playerO) {
+        state.playerO = identity.id;
+        syncAdapter.push(gameId, state);
+      }
+      startRemoteGame(gameId, state);
+    });
+  }
+
+  // --- Copy link button ---
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    const url = document.getElementById('share-url').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1800);
+    });
+  });
+
+  // --- Play Again ---
+  document.getElementById('btn-again').addEventListener('click', () => {
+    if (isLocal) {
+      startLocalGame();
+    } else {
+      // Reset the same game slot with same players
+      const fresh = engine.initState();
+      fresh.playerX = currentState.playerX;
+      fresh.playerO = currentState.playerO;
+      syncAdapter.push(currentGameId, fresh);
+    }
+  });
+
+  // --- Back to Menu ---
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    syncAdapter.unsubscribe();
+    isLocal = false;
+    const u = new URL(window.location.href);
+    u.searchParams.delete('game');
+    window.history.replaceState({}, '', u.toString());
+    document.getElementById('link-panel').classList.remove('visible');
+    showLobby();
+  });
+
+  // --- Lobby buttons ---
+  document.getElementById('btn-local').addEventListener('click', startLocalGame);
+  document.getElementById('btn-challenge').addEventListener('click', createRemoteGame);
+
+  // ============================================================
+  // ENTRY POINT
+  // On load, check URL for an existing game ID.
+  // ============================================================
+  const gameIdFromUrl = lobby.getGameIdFromUrl();
+  if (gameIdFromUrl) {
+    joinRemoteGame(gameIdFromUrl);
+  } else {
+    showLobby();
+  }
+
+})();
+</script>
+</body>
+</html>
