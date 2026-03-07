@@ -735,7 +735,7 @@ const ui = (() => {
 
     }).catch(err => {
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
-      console.error('Firebase join error:', err);
+      console.error('Firebase join error:', err.code, err.message, err);
     });
   }
 
