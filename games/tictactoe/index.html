@@ -283,7 +283,7 @@ const FIREBASE_CONFIG = {
   databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
   projectId:         "multiplayer-tic-tac-toe-1611a",
   storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
-  messagingSenderId: "896542207536",
+  messagingSenderId: "896542207356",
   appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
 };
 
@@ -685,12 +685,12 @@ const ui = (() => {
 
     syncAdapter.push(gameId, state);
 
-    // Watch for Player 2 joining
+    // Watch for Player 2 joining — both players transition via this same listener
     syncAdapter.onStateChange(gameId, remoteState => {
       if (remoteState.playerO) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
-        setTimeout(() => startRemoteGame(gameId, remoteState), 600);
+        startRemoteGame(gameId, remoteState);
       }
     });
   }
@@ -717,26 +717,22 @@ const ui = (() => {
         return;
       }
       const state = snap.val();
-      // If this player is already X (opened their own link again), just join
+
+      // If this player is already X (opened their own link again), go straight in
       if (state.playerX === identity.id) {
         startRemoteGame(gameId, state);
         return;
       }
-      // Claim O slot if empty, then wait for Firebase to confirm before starting
+
+      // Claim O slot if empty
       if (!state.playerO) {
         state.playerO = identity.id;
         syncAdapter.push(gameId, state);
-        // Wait for Firebase to confirm the write, then start
-        syncAdapter.onStateChange(gameId, confirmedState => {
-          if (confirmedState.playerO) {
-            syncAdapter.unsubscribe();
-            startRemoteGame(gameId, confirmedState);
-          }
-        });
-        return;
       }
-      // Both slots filled — spectate
+
+      // Both players now start — Firebase listener in startRemoteGame handles sync
       startRemoteGame(gameId, state);
+
     }).catch(err => {
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
       console.error('Firebase join error:', err);
