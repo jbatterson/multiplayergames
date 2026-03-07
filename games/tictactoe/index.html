@@ -722,12 +722,20 @@ const ui = (() => {
         startRemoteGame(gameId, state);
         return;
       }
-      // Claim O slot if empty
+      // Claim O slot if empty, then wait for Firebase to confirm before starting
       if (!state.playerO) {
         state.playerO = identity.id;
         syncAdapter.push(gameId, state);
+        // Wait for Firebase to confirm the write, then start
+        syncAdapter.onStateChange(gameId, confirmedState => {
+          if (confirmedState.playerO) {
+            syncAdapter.unsubscribe();
+            startRemoteGame(gameId, confirmedState);
+          }
+        });
+        return;
       }
-      // If both slots are filled by others, spectate
+      // Both slots filled — spectate
       startRemoteGame(gameId, state);
     }).catch(err => {
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
