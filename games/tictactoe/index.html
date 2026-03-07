@@ -661,7 +661,7 @@ const ui = (() => {
   }
 
   // --- Start / join a remote game ---
-  function startRemoteGame(gameId, state) {
+  console.log('startRemoteGame called, state:', JSON.stringify(state));
     try {
       isLocal = false;
       currentGameId = gameId;
