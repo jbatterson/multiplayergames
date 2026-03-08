@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tic-Tac-Toe</title>
+  <title>Circuit Breaker</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
-
   <style>
     .header-row {
       display: flex;
@@ -29,7 +28,6 @@
     }
     .home-btn:hover { opacity: 0.5; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Outfit', sans-serif;
       background: #fff;
@@ -39,17 +37,14 @@
       align-items: flex-start;
       justify-content: center;
       padding: 28px 16px 40px;
-      overflow-x: hidden;
     }
-
     .game-container {
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-
     .title {
       font-weight: 900;
       font-size: clamp(1.2rem, 5vw, 1.8rem);
@@ -58,7 +53,6 @@
       margin: 0;
       text-align: center;
     }
-
     .btn {
       width: 100%;
       padding: 1rem 0;
@@ -74,16 +68,66 @@
     }
     .btn:hover:not(:disabled) { background: #000; color: #fff; }
     .btn:disabled { opacity: 0.2; cursor: not-allowed; }
-
     .btn-primary {
-      background: #000;
-      color: #fff;
-      font-weight: 900;
-      font-size: 0.8rem;
-      letter-spacing: 0.12em;
+      background: #000; color: #fff;
+      font-weight: 900; font-size: 0.8rem; letter-spacing: 0.12em;
     }
     .btn-primary:hover:not(:disabled) { background: #333; }
-
+    #screen-lobby {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .lobby-divider {
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #999; margin: 0.25rem 0;
+    }
+    #link-panel {
+      width: 100%; border: 2px solid #000;
+      padding: 1rem; display: none;
+      flex-direction: column; gap: 0.75rem;
+    }
+    #link-panel.visible { display: flex; }
+    .link-box { display: flex; gap: 0.5rem; align-items: stretch; }
+    #share-url {
+      flex: 1; border: 2px solid #000;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem; color: #000; background: #f9f9f9;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
+    .status-line {
+      font-size: 0.65rem; font-weight: 900;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      text-align: center; min-height: 1em;
+    }
+    #screen-game {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .turn-indicator {
+      margin-bottom: 0.75rem;
+      font-size: 0.7rem; font-weight: 900;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      text-align: center; min-height: 1.4em;
+    }
+    .turn-indicator .color-blue { color: #1a3adb; }
+    .turn-indicator .color-red  { color: #cc1111; }
+    #board-svg {
+      width: 100%; max-width: 400px;
+      display: block; margin-bottom: 1.25rem;
+      touch-action: manipulation;
+    }
+    .game-controls {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
     .instructions {
       font-size: 0.8rem;
       line-height: 1.6;
@@ -92,148 +136,8 @@
       margin-bottom: 1.5rem;
       color: #222;
     }
-    #screen-lobby {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .lobby-divider {
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #999;
-      margin: 0.25rem 0;
-    }
-
-    #link-panel {
-      width: 100%;
-      border: 2px solid #000;
-      padding: 1rem;
-      display: none;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    #link-panel.visible { display: flex; }
-
-    .link-box { display: flex; gap: 0.5rem; align-items: stretch; }
-
-    #share-url {
-      flex: 1;
-      border: 2px solid #000;
-      padding: 0.5rem 0.75rem;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.7rem;
-      color: #000;
-      background: #f9f9f9;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
-
-    .status-line {
-      font-size: 0.65rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      text-align: center;
-      min-height: 1em;
-    }
-
-    /* --- Game screen --- */
-    #screen-game {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .player-badge {
-      font-size: 0.65rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .player-badge-symbol {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.5rem;
-      height: 1.5rem;
-      background: #FFD600;
-    }
-
-    .turn-indicator {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      margin-bottom: 1.5rem;
-      min-height: 3.5rem;
-      justify-content: center;
-    }
-
-    .turn-label {
-      font-size: 0.65rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .turn-symbol {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      background: #FFD600;
-    }
-
-    #board-wrapper {
-      box-shadow: 0 0 0 2px #000;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      width: 100%;
-      max-width: 320px;
-      aspect-ratio: 1;
-      margin-bottom: 1.5rem;
-    }
-
-    .cell {
-      border: 2px solid #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      aspect-ratio: 1;
-    }
-    .cell:hover { background: #fafafa; }
-
-    /* Remove doubled borders */
-    .cell:nth-child(1), .cell:nth-child(2), .cell:nth-child(3) { border-top: none; }
-    .cell:nth-child(1), .cell:nth-child(4), .cell:nth-child(7) { border-left: none; }
-    .cell:nth-child(3), .cell:nth-child(6), .cell:nth-child(9) { border-right: none; }
-    .cell:nth-child(7), .cell:nth-child(8), .cell:nth-child(9) { border-bottom: none; }
-
-    .mark { width: 52%; height: 52%; pointer-events: none; }
-
-    .game-controls {
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
+    .c-blue { color: #1a3adb; font-weight: 700; }
+    .c-red  { color: #cc1111; font-weight: 700; }
 
     .hidden { display: none !important; }
   </style>
@@ -248,40 +152,50 @@
         </svg>
       </a>
     </div>
-    <h1 class="title">Tic-Tac-Toe</h1>
+    <h1 class="title">Circuit Breaker</h1>
     <div class="header-side"></div>
   </div>
 
-  <!-- LOBBY SCREEN -->
   <div id="screen-lobby">
 
     <!-- Icon -->
-    <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:auto;margin-bottom:1.25rem;">
-      <line x1="32" y1="4"  x2="32" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-      <line x1="64" y1="4"  x2="64" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-      <line x1="4"  y1="32" x2="92" y2="32" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-      <line x1="4"  y1="64" x2="92" y2="64" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-      <line x1="10" y1="10" x2="26" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="26" y1="10" x2="10" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="48" cy="18" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-      <line x1="40" y1="40" x2="56" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="56" y1="40" x2="40" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="80" cy="80" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-      <circle cx="16" cy="48" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-      <line x1="10" y1="70" x2="26" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="26" y1="70" x2="10" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144.45561 145.50085" style="width:140px;height:auto;margin-bottom:1.25rem;">
+      <circle fill="#3b82f6" cx="58.45016" cy="58.45021" r="13.80488"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="108.45016" y1="9.4954" x2="108.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="108.45021" x2="144.45561" y2="108.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="58.45021" x2="144.45561" y2="58.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="58.45016" y1="9.4954" x2="58.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="8.45021" x2="144.45561" y2="8.45021"/>
+      <circle fill="#25408f" cx="58.45016" cy="8.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="58.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="108.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="83.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="133.45021" r="8.45019"/>
+      <line stroke="#25408f" fill="none" stroke-miterlimit="10" x1="8.45016" y1="9.4954" x2="8.45016" y2="145.50085"/>
+      <path fill="#25408f" d="M16.90033,58.4502c0-3.76349-2.46185-6.9491-5.86182-8.04266V16.49286c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266C16.90033,3.78326,13.11707,0,8.45013,0S0,3.78326,0,8.4502c0,3.76349,2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v29.008h5.1767v-29.008c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266s-2.46185-6.9491-5.86182-8.04266v-33.91467c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266Z"/>
+      <path fill="#d2232a" d="M133.45013,75c-3.76343,0-6.94904,2.46185-8.0426,5.86182h-33.91473c-1.09357-3.39996-4.27917-5.86182-8.04266-5.86182-4.66687,0-8.45013,3.78326-8.45013,8.4502s3.78326,8.4502,8.45013,8.4502c3.76349,0,6.9491-2.46191,8.04266-5.86188h33.91473c1.09351,3.39996,4.27911,5.86188,8.0426,5.86188,4.66687,0,8.4502-3.78326,8.4502-8.4502s-3.78333-8.4502-8.4502-8.4502Z"/>
+      <path fill="#25408f" d="M110.84326,50.34912V16.55127c3.50043-1.03271,6.05707-4.26605,6.05707-8.10107,0-4.66693-3.78326-8.4502-8.4502-8.4502s-8.45013,3.78326-8.45013,8.4502c0,3.69019,2.36932,6.81946,5.66656,7.97119v34.05762c-3.29724,1.15173-5.66656,4.28101-5.66656,7.97119,0,4.66693,3.78326,8.4502,8.45013,8.4502s8.4502-3.78326,8.4502-8.4502c0-3.83502-2.55664-7.06836-6.05707-8.10107Z"/>
     </svg>
 
     <!-- Instructions -->
     <p class="instructions">
-      Take turns placing X and O on a 3×3 grid.
-      First to get three in a row — across, down, or diagonal — wins.
+      Take turns connecting adjacent <span class="c-blue">blue</span> or <span class="c-red">red</span> dots.
+      <span class="c-blue">Blue</span> tries to connect left to right.
+      <span class="c-red">Red</span> tries to connect top to bottom.
+      You can't cross your opponent's lines. First to connect wins.
     </p>
 
     <button class="btn" id="btn-local">Play on This Device</button>
     <div class="lobby-divider">or</div>
     <button class="btn" id="btn-challenge">Challenge a Friend</button>
     <div id="link-panel">
+      <p class="link-instructions">Send this link to a friend. The game starts when they open it.</p>
       <div class="link-box">
         <div id="share-url"></div>
         <button class="btn" id="copy-btn">Copy</button>
@@ -290,14 +204,9 @@
     </div>
   </div>
 
-  <!-- GAME SCREEN -->
   <div id="screen-game" class="hidden">
-    <div class="player-badge" id="player-badge"></div>
-    <div class="turn-indicator">
-      <div class="turn-label" id="turn-label"></div>
-      <div class="turn-symbol" id="turn-symbol"></div>
-    </div>
-    <div id="board-wrapper"></div>
+    <div class="turn-indicator" id="turn-indicator"></div>
+    <svg id="board-svg"></svg>
     <div class="game-controls">
       <div class="status-line" id="game-status"></div>
       <button class="btn btn-primary hidden" id="btn-again">Play Again</button>
@@ -306,10 +215,8 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 "use strict";
 
@@ -323,8 +230,6 @@ const CONFIG = {
 
 // ============================================================
 // SECTION 2 — FIREBASE CONFIG
-// Replace these values with your own project's config.
-// Found in: Firebase Console > Project Settings > Your Apps
 // ============================================================
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
@@ -338,75 +243,39 @@ const FIREBASE_CONFIG = {
 
 // ============================================================
 // SECTION 3 — SYNC ADAPTER
-// All Firebase-specific code lives here behind a fixed interface.
-// To swap backends, replace only this section.
-//
-// Interface:
-//   syncAdapter.push(gameId, state)       — write full game state
-//   syncAdapter.onStateChange(gameId, cb) — subscribe to changes
-//   syncAdapter.unsubscribe()             — remove active listener
-//   syncAdapter.ready                     — boolean, false if unconfigured
 // ============================================================
 const syncAdapter = (() => {
-  let db = null;
-  let activeRef = null;
-  let activeHandler = null;
-
+  let db = null, activeRef = null, activeHandler = null;
   function init() {
     if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") return false;
-    try {
-      firebase.initializeApp(FIREBASE_CONFIG);
-      db = firebase.database();
-      return true;
-    } catch(e) {
-      console.error("Firebase init failed:", e);
-      return false;
-    }
+    try { firebase.initializeApp(FIREBASE_CONFIG); db = firebase.database(); return true; }
+    catch(e) { console.error("Firebase init failed:", e); return false; }
   }
-
-  function push(gameId, state) {
-    if (!db) return;
-    db.ref('games/' + gameId).set(state);
-  }
-
+  function push(gameId, state) { if (db) db.ref('circuitbreaker/' + gameId).set(state); }
   function onStateChange(gameId, cb) {
-    if (!db) return;
     unsubscribe();
-    activeRef = db.ref('games/' + gameId);
-    activeHandler = activeRef.on('value', snap => {
-      if (snap.exists()) cb(snap.val());
-    });
+    if (!db) return;
+    activeRef = db.ref('circuitbreaker/' + gameId);
+    activeHandler = activeRef.on('value', snap => { if (snap.exists()) cb(snap.val()); });
   }
-
   function unsubscribe() {
-    if (activeRef && activeHandler) {
-      activeRef.off('value', activeHandler);
-    }
-    activeRef = null;
-    activeHandler = null;
+    if (activeRef && activeHandler) activeRef.off('value', activeHandler);
+    activeRef = null; activeHandler = null;
   }
-
   const ready = init();
   return { push, onStateChange, unsubscribe, ready };
 })();
 
 // ============================================================
 // SECTION 4 — PLAYER IDENTITY
-// A random player ID is generated once and stored in localStorage.
-// When a game is created, this ID is assigned to playerX.
-// When a game is joined via link, this ID is assigned to playerO.
-// A third visitor to the same link becomes a spectator.
 // ============================================================
 const identity = (() => {
-  const KEY = 'ttt_player_id';
+  const KEY = 'cb_player_id';
   let id = localStorage.getItem(KEY);
-  if (!id) {
-    id = Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(KEY, id);
-  }
+  if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem(KEY, id); }
   function getRole(state) {
-    if (state.playerX === id) return 'X';
-    if (state.playerO === id) return 'O';
+    if (state.playerBlue === id) return 'blue';
+    if (state.playerRed  === id) return 'red';
     return 'spectator';
   }
   return { id, getRole };
@@ -414,415 +283,570 @@ const identity = (() => {
 
 // ============================================================
 // SECTION 5 — LOBBY / URL LOGIC
-// Handles game ID generation, share URL construction, and
-// reading the game ID from the URL on page load.
 // ============================================================
 const lobby = (() => {
   function generateId() {
     let id = '';
-    for (let i = 0; i < CONFIG.gameIdLength; i++) {
+    for (let i = 0; i < CONFIG.gameIdLength; i++)
       id += CONFIG.gameIdChars[Math.floor(Math.random() * CONFIG.gameIdChars.length)];
-    }
     return id;
   }
-
-  function getGameIdFromUrl() {
-    return new URLSearchParams(window.location.search).get('game');
-  }
-
+  function getGameIdFromUrl() { return new URLSearchParams(window.location.search).get('game'); }
   function buildShareUrl(gameId) {
-    const u = new URL(window.location.href);
-    u.search = '';
-    u.searchParams.set('game', gameId);
-    return u.toString();
+    const u = new URL(window.location.href); u.search = ''; u.searchParams.set('game', gameId); return u.toString();
   }
-
-  function pushUrlState(gameId) {
-    window.history.replaceState({}, '', buildShareUrl(gameId));
-  }
-
+  function pushUrlState(gameId) { window.history.replaceState({}, '', buildShareUrl(gameId)); }
   return { generateId, getGameIdFromUrl, buildShareUrl, pushUrlState };
 })();
 
 // ============================================================
-// SECTION 6 — GAME ENGINE  ← cartridge (swap for other games)
-// Pure functions only — no DOM, no network calls.
+// SECTION 6 — GAME ENGINE  ← cartridge
 //
-// Exports:
-//   engine.initState()                    — returns a fresh game state
-//   engine.applyMove(state, index, player) — returns new state or null if illegal
-//   engine.getStatus(state)               — { result, winner }
+// COORDINATE SYSTEM
+// -----------------
+// Blue dots occupy a 5-wide × 4-tall grid: col 0-4, row 0-3.
+// Red dots occupy a 4-wide × 5-tall grid: col 0-3, row 0-4.
 //
-// NOTE: Empty cells use '_' instead of null because Firebase
-// strips null values from objects, which would destroy the board.
+// Pixel layout (in SVG space):
+//   Blue dot (bc, br) → pixel ( PAD + bc*CW,        PAD_TOP + br*CH )
+//   Red  dot (rc, rr) → pixel ( PAD + rc*CW + CW/2, PAD_TOP + rr*CH - CH/2 )
+//
+// Red row 0 sits ABOVE blue row 0 (the top circuit board).
+// Red row 4 sits BELOW blue row 3 (the bottom circuit board).
+// This means red rows 0 and 4 need vertical space outside the blue grid.
+//
+// CROSSING PAIRS (derived from pixel geometry)
+// --------------------------------------------
+// A blue HORIZONTAL edge  blue(bc,br)→blue(bc+1,br)
+//   crosses red VERTICAL  red(bc,br)→red(bc,br+1)
+//   because they share the same square interior.
+//   Valid when bc ∈ 0..3, br ∈ 0..3 (red rows 0..3 are interior verticals... 
+//   wait — red(bc,br)→red(bc,br+1): rr goes br to br+1, so rr in 0..3 means br in 0..3 ✓
+//   BUT we must check: does blue horiz(bc,br) actually cross red vert(bc,br→br+1)?
+//   Blue horiz sits at y = PAD_TOP + br*CH.
+//   Red vert goes from y = PAD_TOP + br*CH - CH/2  to  y = PAD_TOP + (br+1)*CH - CH/2
+//                     = PAD_TOP + br*CH - CH/2  to  PAD_TOP + br*CH + CH/2
+//   The blue horiz y IS between these two → ✓ they cross.
+//   The red vert x = PAD + bc*CW + CW/2, which is between blue cols bc and bc+1 → ✓
+//
+// A blue VERTICAL edge    blue(bc,br)→blue(bc,br+1)
+//   crosses red HORIZONTAL red(bc-1,br+1)→red(bc,br+1)
+//   Blue vert x = PAD + bc*CW.
+//   Red horiz y = PAD_TOP + (br+1)*CH - CH/2 = PAD_TOP + br*CH + CH/2
+//   which is between blue rows br and br+1 → ✓
+//   Red horiz x spans from PAD+(bc-1)*CW+CW/2 to PAD+bc*CW+CW/2,
+//   and bc*CW is between those → ✓
+//   Valid when bc ∈ 1..4, br ∈ 0..2 (br+1 ∈ 1..3 for red rows).
+//
 // ============================================================
 const engine = (() => {
-  const WIN_LINES = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6],
-  ];
 
-  function initState() {
+  function edgeKey(c1, r1, c2, r2) {
+    // Canonical form: smaller coordinate first
+    if (c1 > c2 || (c1 === c2 && r1 > r2)) return `${c2},${r2}-${c1},${r1}`;
+    return `${c1},${r1}-${c2},${r2}`;
+  }
+
+  // Circuit board pre-connections
+  function blueCircuit() {
+    const e = {};
+    for (const bc of [0, 4])
+      for (let br = 0; br < 3; br++) e[edgeKey(bc,br,bc,br+1)] = '_';
+    return e;
+  }
+
+  function redCircuit() {
+    const e = {};
+    for (const rr of [0, 4])
+      for (let rc = 0; rc < 3; rc++) e[edgeKey(rc,rr,rc+1,rr)] = '_';
+    return e;
+  }
+
+  // Build crossing lookup once
+  function buildCrossings() {
+    const map = {};
+    function add(a, b) {
+      if (!map[a]) map[a] = [];
+      if (!map[b]) map[b] = [];
+      if (!map[a].includes(b)) map[a].push(b);
+      if (!map[b].includes(a)) map[b].push(a);
+    }
+    // Blue horiz(bc,br,bc+1,br) × Red vert(bc,br,bc,br+1)
+    // bc: 0..3, br: 0..3
+    for (let bc = 0; bc <= 3; bc++)
+      for (let br = 0; br <= 3; br++)
+        add('b:' + edgeKey(bc,br,bc+1,br), 'r:' + edgeKey(bc,br,bc,br+1));
+
+    // Blue vert(bc,br,bc,br+1) × Red horiz(bc-1,br+1,bc,br+1)
+    // bc: 1..4, br: 0..2
+    for (let bc = 1; bc <= 4; bc++)
+      for (let br = 0; br <= 2; br++)
+        add('b:' + edgeKey(bc,br,bc,br+1), 'r:' + edgeKey(bc-1,br+1,bc,br+1));
+
+    return map;
+  }
+
+  const CROSSINGS = buildCrossings();
+
+  function blueNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 4) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 3) n.push([c, r+1]);
+    return n;
+  }
+
+  function redNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 3) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 4) n.push([c, r+1]);
+    return n;
+  }
+
+  function floodBlue(blueEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let r = 0; r <= 3; r++) { visited.add('0,'+r); q.push([0,r]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (c === 4) return true;
+      for (const [nc,nr] of blueNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (blueEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
+
+  function floodRed(redEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let c = 0; c <= 3; c++) { visited.add(c+',0'); q.push([c,0]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (r === 4) return true;
+      for (const [nc,nr] of redNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (redEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
+
+  function initState(gameIndex) {
     return {
-      board:   {"0":"_","1":"_","2":"_","3":"_","4":"_","5":"_","6":"_","7":"_","8":"_"},
-      turn:    'X',
-      result:  'playing',  // 'playing' | 'win' | 'draw'
-      winner:  null,       // null | 'X' | 'O'
-      playerX: null,       // player ID strings assigned at game creation
-      playerO: null,
+      blueEdges: blueCircuit(),
+      redEdges:  redCircuit(),
+      turn:      gameIndex % 2 === 0 ? 'blue' : 'red',
+      result:    'playing',
+      winner:    null,
+      playerBlue: null,
+      playerRed:  null,
+      gameIndex:  gameIndex,
     };
   }
 
-  function applyMove(state, index, player) {
+  function applyMove(state, edgeKey, player) {
     if (state.result !== 'playing') return null;
     if (state.turn !== player)      return null;
 
-    const board = Array.isArray(state.board)
-      ? state.board.slice()
-      : Object.values(state.board);
+    const isBlue  = player === 'blue';
+    const myMap   = isBlue ? {...state.blueEdges} : {...state.redEdges};
+    const oppMap  = isBlue ? state.redEdges       : state.blueEdges;
+    const prefix  = isBlue ? 'b:' : 'r:';
+    const oppPfx  = isBlue ? 'r:' : 'b:';
 
-    if (board[index] === 'X' || board[index] === 'O') return null;
+    if (myMap[edgeKey]) return null;  // already drawn
 
-    board[index] = player;
-
-    for (const [a,b,c] of WIN_LINES) {
-      if ((board[a] === 'X' || board[a] === 'O') && board[a] === board[b] && board[b] === board[c]) {
-        return { ...state, board: {...board}, result: 'win', winner: player };
-      }
+    // Check crossing constraint
+    const crosses = CROSSINGS[prefix + edgeKey] || [];
+    for (const crossed of crosses) {
+      const crossKey = crossed.slice(2);  // strip 'b:' or 'r:' prefix
+      if (oppMap[crossKey]) return null;
     }
-    if (board.every(sq => sq === 'X' || sq === 'O')) {
-      return { ...state, board: {...board}, result: 'draw', winner: null };
-    }
-    return { ...state, board: {...board}, turn: player === 'X' ? 'O' : 'X' };
+
+    myMap[edgeKey] = '_';
+
+    const next = {
+      ...state,
+      blueEdges: isBlue ? myMap : state.blueEdges,
+      redEdges:  isBlue ? state.redEdges : myMap,
+      turn: isBlue ? 'red' : 'blue',
+    };
+
+    if (isBlue && floodBlue(next.blueEdges)) return {...next, result:'win', winner:'blue'};
+    if (!isBlue && floodRed(next.redEdges))  return {...next, result:'win', winner:'red'};
+    return next;
   }
 
-  function getStatus(state) {
-    return { result: state.result, winner: state.winner };
-  }
+  function getStatus(s) { return { result: s.result, winner: s.winner }; }
 
-  return { initState, applyMove, getStatus };
+  return { initState, applyMove, getStatus, edgeKey, blueNeighbors, redNeighbors };
 })();
-
 // ============================================================
-// SECTION 7 — UI  ← cartridge (swap for other games)
-// Renders game state to DOM and wires up input.
-// Never calls Firebase directly — fires onMove(index) callback.
+// SECTION 7 — UI  ← cartridge
+//
+// SVG LAYOUT
+// ----------
+// The viewBox is sized to include red rows 0 and 4 (which sit
+// half a cell above/below the blue grid).
+//
+// PAD_H = horizontal padding (room for circuit board lines)
+// PAD_TOP = top padding = HALF_CELL + margin (room for red row 0)
+// PAD_BOT = bottom padding = HALF_CELL + margin (room for red row 4)
 // ============================================================
 const ui = (() => {
-  function svgX() {
-    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    s.setAttribute('viewBox', '0 0 100 100');
-    s.classList.add('mark');
-    for (const [x1,y1,x2,y2] of [[18,18,82,82],[82,18,18,82]]) {
-      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      l.setAttribute('x1',x1); l.setAttribute('y1',y1);
-      l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-      l.setAttribute('stroke','#000');
-      l.setAttribute('stroke-width','12');
-      l.setAttribute('stroke-linecap','round');
-      s.appendChild(l);
-    }
-    return s;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // Board geometry constants
+  const COLS_B = 5, ROWS_B = 4;   // blue dot grid
+  const CELL   = 66;               // pixels per cell
+  const HALF   = CELL / 2;
+  const PAD_H  = 28;               // horizontal padding
+  const PAD_V  = 28;               // vertical padding beyond red circuit rows
+
+  // SVG total size
+  const SVG_W = PAD_H * 2 + (COLS_B - 1) * CELL;
+  const SVG_H = PAD_V * 2 + (ROWS_B - 1) * CELL + CELL;  // +CELL for top+bottom half-cells
+
+  // Origin: where blue(0,0) sits in SVG space
+  const OX = PAD_H;
+  const OY = PAD_V + HALF;  // shifted down by half cell to make room for red row 0
+
+  function bluePos(c, r) { return { x: OX + c * CELL, y: OY + r * CELL }; }
+  function redPos(c, r)  { return { x: OX + c * CELL + HALF, y: OY + r * CELL - HALF }; }
+
+  function mkEl(tag, attrs) {
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
   }
 
-  function svgO() {
-    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    s.setAttribute('viewBox', '0 0 100 100');
-    s.classList.add('mark');
-    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    c.setAttribute('cx','50'); c.setAttribute('cy','50'); c.setAttribute('r','34');
-    c.setAttribute('fill','none');
-    c.setAttribute('stroke','#000');
-    c.setAttribute('stroke-width','12');
-    s.appendChild(c);
-    return s;
-  }
-
-  function markerFor(player) {
-    return player === 'X' ? svgX() : svgO();
-  }
+  let onMoveCb = null;
+  let selectedDot = null;
+  let currentState = null;
+  let currentRole  = null;
+  let layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo;
 
   function buildBoard(onMove) {
-    const wrapper = document.getElementById('board-wrapper');
-    wrapper.innerHTML = '';
-    for (let i = 0; i < 9; i++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cell.dataset.index = i;
-      cell.addEventListener('click', () => onMove(i));
-      wrapper.appendChild(cell);
+    onMoveCb = onMove;
+    selectedDot = null;
+
+    const svg = document.getElementById('board-svg');
+    svg.innerHTML = '';
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+
+    layerBluGrid = mkEl('g', {});
+    layerRedGrid = mkEl('g', {});
+    layerEdges   = mkEl('g', {});
+    layerDots    = mkEl('g', {});
+    layerHalo    = mkEl('g', {});
+    svg.append(layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo);
+
+    // Background grid hint lines — blue
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        if (c < COLS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c+1,r);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+        if (r < ROWS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c,r+1);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+      }
+    }
+
+    // Background grid hint lines — red
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        if (c < 3) {
+          const p1 = redPos(c,r), p2 = redPos(c+1,r);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+        if (r < 4) {
+          const p1 = redPos(c,r), p2 = redPos(c,r+1);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+      }
+    }
+
+    // Blue dots
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        const p = bluePos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#1a3adb','data-color':'blue','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    // Red dots
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        const p = redPos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#cc1111','data-color':'red','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    svg.addEventListener('click', e => { if (e.target === svg) clearSel(); });
+  }
+
+  function onDotClick(e) {
+    e.stopPropagation();
+    if (!currentState || currentState.result !== 'playing') return;
+    const color = e.target.getAttribute('data-color');
+    const c = +e.target.getAttribute('data-c');
+    const r = +e.target.getAttribute('data-r');
+    const turn = currentState.turn;
+
+    // Must be your color and your turn
+    if (currentRole !== 'spectator' && color !== currentRole) return;
+    if (color !== turn) return;
+
+    if (!selectedDot) {
+      selectedDot = {color, c, r};
+      drawHalo(color, c, r);
+    } else {
+      if (selectedDot.color === color && selectedDot.c === c && selectedDot.r === r) {
+        clearSel(); return;
+      }
+      if (selectedDot.color !== color) {
+        clearSel();
+        if (color === turn && (currentRole === 'spectator' || color === currentRole)) {
+          selectedDot = {color, c, r}; drawHalo(color, c, r);
+        }
+        return;
+      }
+      // Only complete move if second dot is adjacent to first
+      const neighbors = color === 'blue'
+        ? engine.blueNeighbors(selectedDot.c, selectedDot.r)
+        : engine.redNeighbors(selectedDot.c, selectedDot.r);
+      const isAdjacent = neighbors.some(([nc,nr]) => nc === c && nr === r);
+      if (!isAdjacent) {
+        // Not a neighbor — reselect this dot instead
+        clearSel();
+        selectedDot = {color, c, r};
+        drawHalo(color, c, r);
+        return;
+      }
+      const key = engine.edgeKey(selectedDot.c, selectedDot.r, c, r);
+      clearSel();
+      onMoveCb(key);
     }
   }
 
-  function renderBoard(state) {
-    if (!state || !state.board) return;
+  function drawHalo(color, c, r) {
+    layerHalo.innerHTML = '';
+    const p = color === 'blue' ? bluePos(c,r) : redPos(c,r);
+    layerHalo.appendChild(mkEl('circle', {
+      cx:p.x, cy:p.y, r:16,
+      fill: color === 'blue' ? '#1a3adb' : '#cc1111',
+      opacity:'0.22'
+    }));
+  }
 
-    const board = Array.isArray(state.board)
-      ? state.board
-      : Object.values(state.board);
+  function clearSel() { selectedDot = null; layerHalo.innerHTML = ''; }
 
-    const cells = document.querySelectorAll('.cell');
-    cells.forEach((cell, i) => {
-      cell.innerHTML = '';
-      if (board[i] === 'X' || board[i] === 'O') {
-        cell.appendChild(markerFor(board[i]));
-      }
-    });
+  function renderBoard(state, role) {
+    if (!state) return;
+    currentState = state;
+    currentRole  = role;
+
+    // Show only active player's grid hint
+    layerBluGrid.setAttribute('opacity', state.turn === 'blue' ? '0.15' : '0');
+    layerRedGrid.setAttribute('opacity', state.turn === 'red'  ? '0.15' : '0');
+
+    layerEdges.innerHTML = '';
+    const bEdges = state.blueEdges || {};
+    const rEdges = state.redEdges  || {};
+
+    for (const key of Object.keys(bEdges)) drawEdge(key, 'blue');
+    for (const key of Object.keys(rEdges)) drawEdge(key, 'red');
+
+    if (role !== 'spectator' && state.turn !== role) clearSel();
+  }
+
+  function drawEdge(key, color) {
+    const parts = key.split('-');
+    if (parts.length !== 2) return;
+    const [c1,r1] = parts[0].split(',').map(Number);
+    const [c2,r2] = parts[1].split(',').map(Number);
+    if ([c1,r1,c2,r2].some(isNaN)) return;
+    const p1 = color === 'blue' ? bluePos(c1,r1) : redPos(c1,r1);
+    const p2 = color === 'blue' ? bluePos(c2,r2) : redPos(c2,r2);
+    layerEdges.appendChild(mkEl('line', {
+      x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y,
+      stroke: color === 'blue' ? '#1a3adb' : '#cc1111',
+      'stroke-width': 4.5, 'stroke-linecap': 'round'
+    }));
   }
 
   function renderStatus(state, role) {
-    const turnLabel  = document.getElementById('turn-label');
-    const turnSymbol = document.getElementById('turn-symbol');
-    const gameStatus = document.getElementById('game-status');
-    const btnAgain   = document.getElementById('btn-again');
-    const badge      = document.getElementById('player-badge');
-
-    // Player badge — show assigned symbol for the whole game
-    badge.innerHTML = '';
-    if (role !== 'spectator') {
-      badge.appendChild(document.createTextNode('You are\u00a0'));
-      const sym = document.createElement('span');
-      sym.classList.add('player-badge-symbol');
-      sym.appendChild(markerFor(role));
-      badge.appendChild(sym);
-    }
-
-    turnSymbol.innerHTML = '';
+    const ind      = document.getElementById('turn-indicator');
+    const gs       = document.getElementById('game-status');
+    const btnAgain = document.getElementById('btn-again');
+    const cw = c => `<span class="color-${c}">${c.toUpperCase()}</span>`;
 
     if (state.result === 'playing') {
       btnAgain.classList.add('hidden');
-      gameStatus.textContent = '';
-      if (role === 'spectator') {
-        turnLabel.textContent = state.turn + "'s Turn";
-        turnSymbol.appendChild(markerFor(state.turn));
-      } else if (state.turn === role) {
-        turnLabel.textContent = 'Your Turn';
-        turnSymbol.appendChild(markerFor(role));
-      } else {
-        turnLabel.textContent = "Friend's Turn";
-        turnSymbol.appendChild(markerFor(state.turn));
-      }
+      gs.textContent = '';
+      const t = state.turn;
+      if (role === 'spectator')   ind.innerHTML = `${cw(t)}'s Turn`;
+      else if (t === role)        ind.innerHTML = `Your turn, playing ${cw(role)}`;
+      else                        ind.innerHTML = `Opponent's turn, playing ${cw(t)}`;
     } else {
-      turnLabel.textContent = '';
+      ind.innerHTML = '';
       btnAgain.classList.remove('hidden');
-      if (state.result === 'draw') {
-        gameStatus.textContent = 'Draw!';
-      } else if (role === 'spectator') {
-        gameStatus.textContent = state.winner + ' Wins!';
-      } else if (state.winner === role) {
-        gameStatus.textContent = 'You Win!';
-      } else {
-        gameStatus.textContent = 'You Lose.';
-      }
+      const w = state.winner;
+      if (role === 'spectator')   gs.innerHTML = `${cw(w)} wins!`;
+      else if (w === role)        gs.innerHTML = `You win! ${cw(w)} connected!`;
+      else                        gs.innerHTML = `You lose. ${cw(w)} connected.`;
     }
   }
 
-  return { buildBoard, renderBoard, renderStatus, markerFor };
+  return { buildBoard, renderBoard, renderStatus };
 })();
 
 // ============================================================
 // SECTION 8 — SHELL STARTUP
-// Wires lobby, identity, sync adapter, game engine, and UI
-// together. This section should not need changes when swapping
-// the game cartridge (Sections 6 & 7).
 // ============================================================
 (function startup() {
   const screenLobby = document.getElementById('screen-lobby');
   const screenGame  = document.getElementById('screen-game');
+  function showLobby() { screenLobby.classList.remove('hidden'); screenGame.classList.add('hidden'); }
+  function showGame()  { screenLobby.classList.add('hidden'); screenGame.classList.remove('hidden'); }
 
-  function showLobby() {
-    screenLobby.classList.remove('hidden');
-    screenGame.classList.add('hidden');
-  }
+  let currentState = null, currentRole = 'blue', currentGameId = null, isLocal = false;
 
-  function showGame() {
-    screenLobby.classList.add('hidden');
-    screenGame.classList.remove('hidden');
-  }
-
-  let currentState  = null;
-  let currentRole   = 'X';
-  let currentGameId = null;
-  let isLocal       = false;
-
-  // Firebase stores arrays as objects with numeric string keys.
-  // This normalizes the board back to an array when needed.
   function normalizeState(state) {
-    if (!state || !state.board) return state;
-    if (!Array.isArray(state.board)) {
-      state.board = Object.values(state.board);
-    }
+    if (!state) return state;
+    if (!state.blueEdges) state.blueEdges = {};
+    if (!state.redEdges)  state.redEdges  = {};
     return state;
   }
 
-  // --- Handle a move (called by UI on cell click) ---
-  function handleMove(index) {
+  function handleMove(edgeKey) {
     if (!currentState) return;
-
     if (isLocal) {
-      const next = engine.applyMove(currentState, index, currentState.turn);
+      const next = engine.applyMove(currentState, edgeKey, currentState.turn);
       if (!next) return;
       currentState = next;
-      ui.renderBoard(currentState);
+      ui.renderBoard(currentState, 'spectator');
       ui.renderStatus(currentState, 'spectator');
       return;
     }
-
-    // Remote: only move on your turn
     if (currentState.turn !== currentRole) return;
-    const next = engine.applyMove(currentState, index, currentRole);
+    const next = engine.applyMove(currentState, edgeKey, currentRole);
     if (!next) return;
-    next.playerX = currentState.playerX;
-    next.playerO = currentState.playerO;
+    next.playerBlue = currentState.playerBlue;
+    next.playerRed  = currentState.playerRed;
     syncAdapter.push(currentGameId, next);
   }
 
-  // --- Start a local (same-device) game ---
   function startLocalGame() {
     isLocal = true;
     syncAdapter.unsubscribe();
     currentGameId = null;
-    currentState  = engine.initState();
-    currentRole   = 'spectator';
+    const gi = currentState ? (currentState.gameIndex || 0) + 1 : 0;
+    currentState = engine.initState(gi);
+    currentRole  = 'spectator';
     ui.buildBoard(handleMove);
-    ui.renderBoard(currentState);
+    ui.renderBoard(currentState, 'spectator');
     ui.renderStatus(currentState, 'spectator');
     showGame();
   }
 
-  // --- Start a remote game (used by both players) ---
   function startRemoteGame(gameId, state) {
     isLocal       = false;
     currentGameId = gameId;
     currentState  = normalizeState(state);
     currentRole   = identity.getRole(currentState);
     ui.buildBoard(handleMove);
-    ui.renderBoard(currentState);
+    ui.renderBoard(currentState, currentRole);
     ui.renderStatus(currentState, currentRole);
     showGame();
-
-    syncAdapter.onStateChange(gameId, remoteState => {
-      currentState = normalizeState(remoteState);
+    syncAdapter.onStateChange(gameId, remote => {
+      currentState = normalizeState(remote);
       currentRole  = identity.getRole(currentState);
-      ui.renderBoard(currentState);
+      ui.renderBoard(currentState, currentRole);
       ui.renderStatus(currentState, currentRole);
     });
   }
 
-  // --- Player 1: create a new remote game and share the link ---
   function createRemoteGame() {
-    if (!syncAdapter.ready) {
-      alert("Firebase isn't configured.\n\nFill in your Firebase config in Section 2, or use 'Play on This Device'.");
-      return;
-    }
+    if (!syncAdapter.ready) { alert("Firebase isn't configured.\n\nFill in Section 2, or use 'Play on This Device'."); return; }
     const gameId = lobby.generateId();
-    const state  = engine.initState();
-    state.playerX = identity.id;
+    const state  = engine.initState(0);
+    state.playerBlue = identity.id;
     lobby.pushUrlState(gameId);
-
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('btn-challenge').classList.add('hidden');
     document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
-
     syncAdapter.push(gameId, state);
-
-    // Wait for Player 2 to claim the O slot and for a complete state
-    syncAdapter.onStateChange(gameId, remoteState => {
-      if (remoteState.playerO && remoteState.board) {
+    syncAdapter.onStateChange(gameId, remote => {
+      if (remote.playerRed && remote.blueEdges) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
-        startRemoteGame(gameId, remoteState);
+        startRemoteGame(gameId, remote);
       }
     });
   }
 
-  // --- Player 2: join an existing remote game from a link ---
   function joinRemoteGame(gameId) {
-    if (!syncAdapter.ready) {
-      alert("Firebase isn't configured.");
-      showLobby();
-      return;
-    }
-
+    if (!syncAdapter.ready) { alert("Firebase isn't configured."); showLobby(); return; }
     showLobby();
     document.getElementById('link-panel').classList.add('visible');
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('lobby-status').textContent = 'Joining game…';
-
-    firebase.database().ref('games/' + gameId).once('value').then(snap => {
-      if (!snap.exists()) {
-        document.getElementById('lobby-status').textContent = 'Game not found. The link may be expired.';
-        return;
-      }
+    firebase.database().ref('circuitbreaker/' + gameId).once('value').then(snap => {
+      if (!snap.exists()) { document.getElementById('lobby-status').textContent = 'Game not found.'; return; }
       const state = snap.val();
-
-      // If this player created the game, go straight in
-      if (state.playerX === identity.id) {
-        startRemoteGame(gameId, state);
-        return;
-      }
-
-      // Claim the O slot if still open
-      if (!state.playerO) {
-        state.playerO = identity.id;
-        syncAdapter.push(gameId, state);
-      }
-
+      if (state.playerBlue === identity.id) { startRemoteGame(gameId, state); return; }
+      if (!state.playerRed) { state.playerRed = identity.id; syncAdapter.push(gameId, state); }
       startRemoteGame(gameId, state);
-
     }).catch(err => {
       console.error('Join error:', err);
       document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
     });
   }
 
-  // --- Copy link button ---
   document.getElementById('copy-btn').addEventListener('click', () => {
-    const url = document.getElementById('share-url').textContent;
-    navigator.clipboard.writeText(url).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy', 1800);
+    navigator.clipboard.writeText(document.getElementById('share-url').textContent).then(() => {
+      const b = document.getElementById('copy-btn'); b.textContent = 'Copied!';
+      setTimeout(() => b.textContent = 'Copy', 1800);
     });
   });
 
-  // --- Play Again ---
   document.getElementById('btn-again').addEventListener('click', () => {
-    if (isLocal) {
-      startLocalGame();
-    } else {
-      const fresh = engine.initState();
-      fresh.playerX = currentState.playerX;
-      fresh.playerO = currentState.playerO;
-      syncAdapter.push(currentGameId, fresh);
-    }
+    if (isLocal) { startLocalGame(); return; }
+    const gi = (currentState.gameIndex || 0) + 1;
+    const fresh = engine.initState(gi);
+    fresh.playerBlue = currentState.playerBlue;
+    fresh.playerRed  = currentState.playerRed;
+    syncAdapter.push(currentGameId, fresh);
   });
 
-  // --- Back to Menu ---
   document.getElementById('btn-menu').addEventListener('click', () => {
-    syncAdapter.unsubscribe();
-    isLocal = false;
-    const u = new URL(window.location.href);
-    u.searchParams.delete('game');
+    syncAdapter.unsubscribe(); isLocal = false;
+    const u = new URL(window.location.href); u.searchParams.delete('game');
     window.history.replaceState({}, '', u.toString());
     document.getElementById('link-panel').classList.remove('visible');
+    document.getElementById('btn-challenge').classList.remove('hidden');
     showLobby();
   });
 
   document.getElementById('btn-local').addEventListener('click', startLocalGame);
   document.getElementById('btn-challenge').addEventListener('click', createRemoteGame);
 
-  // --- Entry point ---
-  // On load, check the URL for an existing game ID.
-  // If found, join that game. Otherwise show the lobby.
-  const gameIdFromUrl = lobby.getGameIdFromUrl();
-  if (gameIdFromUrl) {
-    joinRemoteGame(gameIdFromUrl);
-  } else {
-    showLobby();
-  }
-
+  const gid = lobby.getGameIdFromUrl();
+  if (gid) joinRemoteGame(gid); else showLobby();
 })();
 </script>
 </body>
