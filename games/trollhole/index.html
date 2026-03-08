@@ -625,21 +625,23 @@ const ui = (() => {
 
   function handleMove(cell) {
     if (!currentState) return;
-    console.log('handleMove — cell:', cell, 'turn:', currentState.turn, 'role:', currentRole, 'isLocal:', isLocal);
+    const state = currentState;
+    const role = currentRole;
+    console.log('handleMove — cell:', cell, 'turn:', state.turn, 'role:', role, 'isLocal:', isLocal);
     if (isLocal) {
-      const next = engine.applyMove(currentState, cell, 'spectator');
+      const next = engine.applyMove(state, cell, 'spectator');
       if (!next) return;
       currentState = next;
       ui.renderBoard(currentState, 'spectator');
       ui.renderStatus(currentState, 'spectator');
       return;
     }
-    if (currentState.turn !== currentRole) return;
-    const next = engine.applyMove(currentState, cell, currentRole);
-    console.log('applyMove result:', next, 'board[cell]:', currentState.board[cell]);
+    if (state.turn !== role) return;
+    const next = engine.applyMove(state, cell, role);
+    console.log('applyMove result:', next, 'board[cell]:', state.board[cell]);
     if (!next) return;
-    next.playerBlue = currentState.playerBlue;
-    next.playerRed  = currentState.playerRed;
+    next.playerBlue = state.playerBlue;
+    next.playerRed  = state.playerRed;
     syncAdapter.push(currentGameId, next);
   }
 
