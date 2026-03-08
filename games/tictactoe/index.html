@@ -386,7 +386,7 @@ const engine = (() => {
 
   function initState() {
     return {
-      board:   [null,null,null,null,null,null,null,null,null],
+      board:   {"0":null,"1":null,"2":null,"3":null,"4":null,"5":null,"6":null,"7":null,"8":null},
       turn:    'X',
       result:  'playing',
       winner:  null,
@@ -398,20 +398,28 @@ const engine = (() => {
   function applyMove(state, index, player) {
     if (state.result !== 'playing') return null;
     if (state.turn !== player)      return null;
-    if (state.board[index] !== null) return null;
 
-    const board = state.board.slice();
+    // Normalize board to array for processing
+    const board = Array.isArray(state.board)
+      ? state.board.slice()
+      : Object.values(state.board);
+
+    if (board[index] !== null) return null;
+
     board[index] = player;
 
+    // Check win
     for (const [a,b,c] of WIN_LINES) {
       if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-        return { ...state, board, result: 'win', winner: player };
+        return { ...state, board: {...board}, result: 'win', winner: player };
       }
     }
+    // Check draw
     if (board.every(sq => sq !== null)) {
-      return { ...state, board, result: 'draw', winner: null };
+      return { ...state, board: {...board}, result: 'draw', winner: null };
     }
-    return { ...state, board, turn: player === 'X' ? 'O' : 'X' };
+    // Continue
+    return { ...state, board: {...board}, turn: player === 'X' ? 'O' : 'X' };
   }
 
   function getStatus(state) {
