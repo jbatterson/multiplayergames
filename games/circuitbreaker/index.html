@@ -195,6 +195,7 @@
     <div class="lobby-divider">or</div>
     <button class="btn" id="btn-challenge">Challenge a Friend</button>
     <div id="link-panel">
+      <p class="link-instructions">Send this link to a friend. The game starts when they open it.</p>
       <div class="link-box">
         <div id="share-url"></div>
         <button class="btn" id="copy-btn">Copy</button>
@@ -231,15 +232,14 @@ const CONFIG = {
 // SECTION 2 — FIREBASE CONFIG
 // ============================================================
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
-  authDomain:        "multiplayer-tic-tac-toe-1611a.firebaseapp.com",
-  databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
-  projectId:         "multiplayer-tic-tac-toe-1611a",
-  storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
-  messagingSenderId: "896542207536",
-  appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID",
 };
-
 
 // ============================================================
 // SECTION 3 — SYNC ADAPTER
@@ -787,6 +787,7 @@ const ui = (() => {
     lobby.pushUrlState(gameId);
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('btn-challenge').classList.add('hidden');
     document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
     syncAdapter.push(gameId, state);
     syncAdapter.onStateChange(gameId, remote => {
@@ -837,6 +838,7 @@ const ui = (() => {
     const u = new URL(window.location.href); u.searchParams.delete('game');
     window.history.replaceState({}, '', u.toString());
     document.getElementById('link-panel').classList.remove('visible');
+    document.getElementById('btn-challenge').classList.remove('hidden');
     showLobby();
   });
 
