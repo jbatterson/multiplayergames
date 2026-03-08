@@ -383,6 +383,7 @@ const ui = (() => {
   let onMoveCb = null;
   let hoverIndex = null;
   let currentState = null;
+  let lastWasTouch = false;
   let currentRole = null;
   let endAnimatedKey = null;
   let animationTimers = [];
@@ -443,8 +444,8 @@ const ui = (() => {
 
       const circle = mkEl('circle', { cx, cy, r: 28, fill: '#eee', style: 'cursor:pointer' });
       circle.addEventListener('click', () => onMoveCb(i));
-      circle.addEventListener('mouseenter', () => { hoverIndex = i; renderPreview(); });
-      circle.addEventListener('mouseleave', () => { hoverIndex = null; renderPreview(); });
+      circle.addEventListener('mouseenter', () => { if (lastWasTouch) return; hoverIndex = i; renderPreview(); });
+      circle.addEventListener('mouseleave', () => { if (lastWasTouch) return; hoverIndex = null; renderPreview(); });
 
       const text = mkEl('text', {
         x: cx, y: cy + 6, 'text-anchor': 'middle',
@@ -461,6 +462,8 @@ const ui = (() => {
     }
 
     svg.addEventListener('click', e => { if (e.target === svg) { hoverIndex = null; renderPreview(); } });
+    document.addEventListener('touchstart', () => { lastWasTouch = true; }, { passive: true });
+    document.addEventListener('mousemove', () => { lastWasTouch = false; });
   }
 
   function clearAnimations() {
