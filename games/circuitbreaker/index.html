@@ -106,6 +106,17 @@
       width: 100%; max-width: 400px;
       display: flex; flex-direction: column; gap: 0.75rem;
     }
+    .instructions {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 300px;
+      margin-bottom: 1.5rem;
+      color: #222;
+    }
+    .c-blue { color: #1a3adb; font-weight: 700; }
+    .c-red  { color: #cc1111; font-weight: 700; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -114,6 +125,40 @@
   <h1 class="title">Circuit Breaker</h1>
 
   <div id="screen-lobby">
+
+    <!-- Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144.45561 145.50085" style="width:140px;height:auto;margin-bottom:1.25rem;">
+      <circle fill="#3b82f6" cx="58.45016" cy="58.45021" r="13.80488"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="108.45016" y1="9.4954" x2="108.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="108.45021" x2="144.45561" y2="108.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="58.45021" x2="144.45561" y2="58.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="58.45016" y1="9.4954" x2="58.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="8.45021" x2="144.45561" y2="8.45021"/>
+      <circle fill="#25408f" cx="58.45016" cy="8.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="58.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="108.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="83.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="133.45021" r="8.45019"/>
+      <line stroke="#25408f" fill="none" stroke-miterlimit="10" x1="8.45016" y1="9.4954" x2="8.45016" y2="145.50085"/>
+      <path fill="#25408f" d="M16.90033,58.4502c0-3.76349-2.46185-6.9491-5.86182-8.04266V16.49286c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266C16.90033,3.78326,13.11707,0,8.45013,0S0,3.78326,0,8.4502c0,3.76349,2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v29.008h5.1767v-29.008c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266s-2.46185-6.9491-5.86182-8.04266v-33.91467c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266Z"/>
+      <path fill="#d2232a" d="M133.45013,75c-3.76343,0-6.94904,2.46185-8.0426,5.86182h-33.91473c-1.09357-3.39996-4.27917-5.86182-8.04266-5.86182-4.66687,0-8.45013,3.78326-8.45013,8.4502s3.78326,8.4502,8.45013,8.4502c3.76349,0,6.9491-2.46191,8.04266-5.86188h33.91473c1.09351,3.39996,4.27911,5.86188,8.0426,5.86188,4.66687,0,8.4502-3.78326,8.4502-8.4502s-3.78333-8.4502-8.4502-8.4502Z"/>
+      <path fill="#25408f" d="M110.84326,50.34912V16.55127c3.50043-1.03271,6.05707-4.26605,6.05707-8.10107,0-4.66693-3.78326-8.4502-8.4502-8.4502s-8.45013,3.78326-8.45013,8.4502c0,3.69019,2.36932,6.81946,5.66656,7.97119v34.05762c-3.29724,1.15173-5.66656,4.28101-5.66656,7.97119,0,4.66693,3.78326,8.4502,8.45013,8.4502s8.4502-3.78326,8.4502-8.4502c0-3.83502-2.55664-7.06836-6.05707-8.10107Z"/>
+    </svg>
+
+    <!-- Instructions -->
+    <p class="instructions">
+      Take turns connecting adjacent <span class="c-blue">blue</span> or <span class="c-red">red</span> dots.
+      <span class="c-blue">Blue</span> tries to connect left to right.
+      <span class="c-red">Red</span> tries to connect top to bottom.
+      You can't cross your opponent's lines. First to connect wins.
+    </p>
+
     <button class="btn" id="btn-local">Play on This Device</button>
     <div class="lobby-divider">or</div>
     <button class="btn" id="btn-challenge">Challenge a Friend</button>
@@ -154,13 +199,13 @@ const CONFIG = {
 // SECTION 2 — FIREBASE CONFIG
 // ============================================================
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
-  authDomain:        "multiplayer-tic-tac-toe-1611a.firebaseapp.com",
-  databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
-  projectId:         "multiplayer-tic-tac-toe-1611a",
-  storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
-  messagingSenderId: "896542207536",
-  appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID",
 };
 
 // ============================================================
