@@ -7,6 +7,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
 
   <style>
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .header-side {
+      width: 32px;
+      display: flex;
+      align-items: center;
+    }
+    .home-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .home-btn:hover { opacity: 0.5; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -31,10 +52,11 @@
 
     .title {
       font-weight: 900;
-      font-size: 2.25rem;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      margin-bottom: 2rem;
+      margin: 0;
+      text-align: center;
     }
 
     .btn {
@@ -62,7 +84,14 @@
     }
     .btn-primary:hover:not(:disabled) { background: #333; }
 
-    /* --- Lobby --- */
+    .instructions {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 300px;
+      margin-bottom: 1.5rem;
+      color: #222;
+    }
     #screen-lobby {
       width: 100%;
       display: flex;
@@ -211,10 +240,44 @@
 </head>
 <body>
 <div class="game-container">
-  <h1 class="title">Tic-Tac-Toe</h1>
+  <div class="header-row">
+    <div class="header-side">
+      <a class="home-btn" href="../../" aria-label="Home">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true">
+          <path d="M4 11L2.5 11L12 3L21.5 11L20 11L20 21Q20 22 19 22L5 22Q4 22 4 21ZM10 15L14 15Q15 15 15 16L15 22L9 22L9 16Q9 15 10 15Z"/>
+        </svg>
+      </a>
+    </div>
+    <h1 class="title">Tic-Tac-Toe</h1>
+    <div class="header-side"></div>
+  </div>
 
   <!-- LOBBY SCREEN -->
   <div id="screen-lobby">
+
+    <!-- Icon -->
+    <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:auto;margin-bottom:1.25rem;">
+      <line x1="32" y1="4"  x2="32" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      <line x1="64" y1="4"  x2="64" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      <line x1="4"  y1="32" x2="92" y2="32" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      <line x1="4"  y1="64" x2="92" y2="64" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      <line x1="10" y1="10" x2="26" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="26" y1="10" x2="10" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="48" cy="18" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+      <line x1="40" y1="40" x2="56" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="56" y1="40" x2="40" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="80" cy="80" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+      <circle cx="16" cy="48" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+      <line x1="10" y1="70" x2="26" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="26" y1="70" x2="10" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Instructions -->
+    <p class="instructions">
+      Take turns placing X and O on a 3×3 grid.
+      First to get three in a row — across, down, or diagonal — wins.
+    </p>
+
     <button class="btn" id="btn-local">Play on This Device</button>
     <div class="lobby-divider">or</div>
     <button class="btn" id="btn-challenge">Challenge a Friend</button>
