@@ -159,7 +159,6 @@
   <div id="screen-lobby">
     <!-- Lobby icon -->
     <svg viewBox="0 0 140 140" style="width:120px;height:auto;margin-bottom:1.25rem;">
-      <!-- Hex grid of circles -->
       <circle cx="70" cy="30" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
       <circle cx="40" cy="54" r="14" fill="#1a3adb"/>
       <circle cx="100" cy="54" r="14" fill="#cc1111"/>
@@ -168,14 +167,11 @@
       <circle cx="55" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
       <circle cx="85" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
       <circle cx="115" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <!-- troll green hole -->
       <circle cx="70" cy="104" r="14" fill="#3aa655"/>
       <circle cx="40" cy="104" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
       <circle cx="100" cy="104" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <!-- Numbers -->
       <text x="40" y="59" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="13" fill="#fff">3</text>
       <text x="100" y="59" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="13" fill="#fff">5</text>
-      <!-- troll eyes -->
       <circle cx="64" cy="100" r="4" fill="#000"/>
       <circle cx="76" cy="100" r="4" fill="#000"/>
       <path d="M63,109 Q70,115 77,109" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -368,7 +364,6 @@ const engine = (() => {
 const ui = (() => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  // Hex grid layout: rows of [3,4,5,4,3] cells
   const LAYOUT = [3, 4, 5, 4, 3];
   const CELL = 66;
   const VERT = CELL * 0.866;
@@ -492,7 +487,6 @@ const ui = (() => {
       face.setAttribute('visibility', 'hidden');
       circle.classList.remove('circle-fade');
 
-      // Normalize board cell (Firebase may deserialize objects)
       const raw = state.board ? state.board[i] : null;
       const cell = raw && typeof raw === 'object' ? raw : null;
 
@@ -527,7 +521,6 @@ const ui = (() => {
     if (!svg || !currentState) return;
     const nodes = svg.children;
 
-    // Clear all previews first
     for (let i = 0; i < nodes.length; i++) {
       const text = nodes[i].children[1];
       if (!currentState.board || !currentState.board[i]) {
@@ -539,9 +532,8 @@ const ui = (() => {
     if (currentState.result !== 'playing') return;
     if (hoverIndex === null) return;
     const raw = currentState.board ? currentState.board[hoverIndex] : null;
-    if (raw) return; // cell occupied
+    if (raw) return;
 
-    // Only show preview if it's this player's turn (or spectator/local)
     if (currentRole !== 'spectator' && currentRole !== currentState.turn) return;
 
     const text = nodes[hoverIndex].children[1];
@@ -561,21 +553,15 @@ const ui = (() => {
     const circle = g.children[0];
     const face = g.children[2];
 
-    animationTimers.push(setTimeout(() => {
-      circle.setAttribute('fill', '#3aa655');
-    }, 200));
-    animationTimers.push(setTimeout(() => {
-      face.setAttribute('visibility', 'visible');
-    }, 500));
+    animationTimers.push(setTimeout(() => { circle.setAttribute('fill', '#3aa655'); }, 200));
+    animationTimers.push(setTimeout(() => { face.setAttribute('visibility', 'visible'); }, 500));
 
     const eaten = engine.NEIGHBORS[troll];
     let delay = 800;
     for (const n of eaten) {
       const gn = nodes[n];
       const c = gn.children[0];
-      animationTimers.push(setTimeout(() => {
-        c.classList.add('circle-fade');
-      }, delay));
+      animationTimers.push(setTimeout(() => { c.classList.add('circle-fade'); }, delay));
       delay += 250;
     }
   }
@@ -590,9 +576,9 @@ const ui = (() => {
       btnAgain.classList.add('hidden');
       gs.textContent = '';
       const t = state.turn;
-      if (role === 'spectator')     ind.innerHTML = `${cw(t)}: Place ${state.round}`;
-      else if (t === role)          ind.innerHTML = `Your turn, ${cw(role)}: Place ${state.round}`;
-      else                          ind.innerHTML = `Opponent's turn — ${cw(t)}: Place ${state.round}`;
+      if (role === 'spectator')  ind.innerHTML = `${cw(t)}: Place ${state.round}`;
+      else if (t === role)       ind.innerHTML = `Your turn, ${cw(role)}: Place ${state.round}`;
+      else                       ind.innerHTML = `Opponent's turn — ${cw(t)}: Place ${state.round}`;
     } else {
       ind.innerHTML = '';
       btnAgain.classList.remove('hidden');
@@ -600,7 +586,6 @@ const ui = (() => {
         gs.innerHTML = `Tie — <span class="color-blue">Blue ${state.scores.blue}</span> / <span class="color-red">Red ${state.scores.red}</span>`;
       } else {
         const w = state.winner;
-        const loser = w === 'blue' ? 'red' : 'blue';
         const ws = w === 'blue' ? state.scores.blue : state.scores.red;
         const ls = w === 'blue' ? state.scores.red : state.scores.blue;
         if (role === 'spectator') gs.innerHTML = `${cw(w)} wins! ${ws}–${ls}`;
@@ -626,7 +611,6 @@ const ui = (() => {
 
   function normalizeState(state) {
     if (!state) return state;
-    // Firebase may return board as object with numeric keys — normalize to array
     if (state.board && !Array.isArray(state.board)) {
       const arr = [];
       for (let i = 0; i < 19; i++) arr[i] = state.board[i] || null;
@@ -696,7 +680,9 @@ const ui = (() => {
     document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
     syncAdapter.push(gameId, state);
     syncAdapter.onStateChange(gameId, remote => {
-      if (remote.playerRed && remote.board) {
+      // Use playerRed + gameIndex (always present) to detect join — avoids
+      // Firebase null-stripping the empty board array making remote.board falsy
+      if (remote.playerRed && remote.gameIndex !== undefined) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
         startRemoteGame(gameId, remote);
