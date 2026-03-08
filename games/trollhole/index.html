@@ -625,6 +625,7 @@ const ui = (() => {
 
   function handleMove(cell) {
     if (!currentState) return;
+    console.log('handleMove — cell:', cell, 'turn:', currentState.turn, 'role:', currentRole, 'isLocal:', isLocal);
     if (isLocal) {
       const next = engine.applyMove(currentState, cell, 'spectator');
       if (!next) return;
@@ -662,7 +663,7 @@ const ui = (() => {
     ui.buildBoard(handleMove);
     ui.renderBoard(currentState, currentRole);
     ui.renderStatus(currentState, currentRole);
-    console.log('startRemoteGame — myId:', identity.id, 'playerBlue:', currentState.playerBlue, 'playerRed:', currentState.playerRed, 'role:', currentRole);
+    console.log('startRemoteGame — myId:', identity.id, 'playerBlue:', currentState.playerBlue, 'playerRed:', currentState.playerRed, 'role:', currentRole, 'turn:', currentState.turn);
     showGame();
     syncAdapter.onStateChange(gameId, remote => {
       currentState = normalizeState(remote);
