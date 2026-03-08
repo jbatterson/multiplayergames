@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Troll Hole</title>
+  <title>Circuit Breaker</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
   <style>
     .header-row {
@@ -100,7 +100,6 @@
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
-    .link-instructions { font-size: 0.7rem; font-weight: 600; text-align: center; color: #444; }
     .status-line {
       font-size: 0.65rem; font-weight: 900;
       letter-spacing: 0.2em; text-transform: uppercase;
@@ -123,6 +122,7 @@
     #board-svg {
       width: 100%; max-width: 400px;
       display: block; margin-bottom: 1.25rem;
+      touch-action: manipulation;
     }
     .game-controls {
       width: 100%; max-width: 400px;
@@ -138,7 +138,7 @@
     }
     .c-blue { color: #1a3adb; font-weight: 700; }
     .c-red  { color: #cc1111; font-weight: 700; }
-    .circle-fade { opacity: 0.35; transition: opacity 0.35s; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -152,40 +152,43 @@
         </svg>
       </a>
     </div>
-    <h1 class="title">Troll Hole</h1>
+    <h1 class="title">Circuit Breaker</h1>
     <div class="header-side"></div>
   </div>
 
   <div id="screen-lobby">
-    <!-- Lobby icon -->
-    <svg viewBox="0 0 140 140" style="width:120px;height:auto;margin-bottom:1.25rem;">
-      <!-- Hex grid of circles -->
-      <circle cx="70" cy="30" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="40" cy="54" r="14" fill="#1a3adb"/>
-      <circle cx="100" cy="54" r="14" fill="#cc1111"/>
-      <circle cx="70" cy="54" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="25" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="55" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="85" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="115" cy="79" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <!-- troll green hole -->
-      <circle cx="70" cy="104" r="14" fill="#3aa655"/>
-      <circle cx="40" cy="104" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <circle cx="100" cy="104" r="14" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
-      <!-- Numbers -->
-      <text x="40" y="59" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="13" fill="#fff">3</text>
-      <text x="100" y="59" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="13" fill="#fff">5</text>
-      <!-- troll eyes -->
-      <circle cx="64" cy="100" r="4" fill="#000"/>
-      <circle cx="76" cy="100" r="4" fill="#000"/>
-      <path d="M63,109 Q70,115 77,109" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144.45561 145.50085" style="width:140px;height:auto;margin-bottom:1.25rem;">
+      <circle fill="#3b82f6" cx="58.45016" cy="58.45021" r="13.80488"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="108.45016" y1="9.4954" x2="108.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="108.45021" x2="144.45561" y2="108.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="58.45021" x2="144.45561" y2="58.45021"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="58.45016" y1="9.4954" x2="58.45016" y2="145.50085"/>
+      <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016" y1="8.45021" x2="144.45561" y2="8.45021"/>
+      <circle fill="#25408f" cx="58.45016" cy="8.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="58.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="58.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#25408f" cx="108.45016" cy="108.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="33.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="83.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="33.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="83.45016" cy="133.45021" r="8.45019"/>
+      <circle fill="#d2232a" cx="133.45016" cy="133.45021" r="8.45019"/>
+      <line stroke="#25408f" fill="none" stroke-miterlimit="10" x1="8.45016" y1="9.4954" x2="8.45016" y2="145.50085"/>
+      <path fill="#25408f" d="M16.90033,58.4502c0-3.76349-2.46185-6.9491-5.86182-8.04266V16.49286c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266C16.90033,3.78326,13.11707,0,8.45013,0S0,3.78326,0,8.4502c0,3.76349,2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v29.008h5.1767v-29.008c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266s-2.46185-6.9491-5.86182-8.04266v-33.91467c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266Z"/>
+      <path fill="#d2232a" d="M133.45013,75c-3.76343,0-6.94904,2.46185-8.0426,5.86182h-33.91473c-1.09357-3.39996-4.27917-5.86182-8.04266-5.86182-4.66687,0-8.45013,3.78326-8.45013,8.4502s3.78326,8.4502,8.45013,8.4502c3.76349,0,6.9491-2.46191,8.04266-5.86188h33.91473c1.09351,3.39996,4.27911,5.86188,8.0426,5.86188,4.66687,0,8.4502-3.78326,8.4502-8.4502s-3.78333-8.4502-8.4502-8.4502Z"/>
+      <path fill="#25408f" d="M110.84326,50.34912V16.55127c3.50043-1.03271,6.05707-4.26605,6.05707-8.10107,0-4.66693-3.78326-8.4502-8.4502-8.4502s-8.45013,3.78326-8.45013,8.4502c0,3.69019,2.36932,6.81946,5.66656,7.97119v34.05762c-3.29724,1.15173-5.66656,4.28101-5.66656,7.97119,0,4.66693,3.78326,8.4502,8.45013,8.4502s8.4502-3.78326,8.4502-8.4502c0-3.83502-2.55664-7.06836-6.05707-8.10107Z"/>
     </svg>
 
+    <!-- Instructions -->
     <p class="instructions">
-      Take turns placing numbers 1–9 on the hex board.
-      <span class="c-blue">Blue</span> and <span class="c-red">Red</span> each place one per round.
-      After round 9, the Troll eats the empty hole and all its neighbors.
-      Highest score wins!
+      Take turns connecting adjacent <span class="c-blue">blue</span> or <span class="c-red">red</span> dots.
+      <span class="c-blue">Blue</span> tries to connect left to right.
+      <span class="c-red">Red</span> tries to connect top to bottom.
+      You can't cross your opponent's lines. First to connect wins.
     </p>
 
     <button class="btn" id="btn-local">Play on This Device</button>
@@ -203,7 +206,7 @@
 
   <div id="screen-game" class="hidden">
     <div class="turn-indicator" id="turn-indicator"></div>
-    <svg id="board-svg" viewBox="0 0 420 380"></svg>
+    <svg id="board-svg"></svg>
     <div class="game-controls">
       <div class="status-line" id="game-status"></div>
       <button class="btn btn-primary hidden" id="btn-again">Play Again</button>
@@ -229,13 +232,13 @@ const CONFIG = {
 // SECTION 2 — FIREBASE CONFIG
 // ============================================================
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
-  authDomain:        "multiplayer-tic-tac-toe-1611a.firebaseapp.com",
-  databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
-  projectId:         "multiplayer-tic-tac-toe-1611a",
-  storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
-  messagingSenderId: "896542207536",
-  appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID",
 };
 
 // ============================================================
@@ -248,11 +251,11 @@ const syncAdapter = (() => {
     try { firebase.initializeApp(FIREBASE_CONFIG); db = firebase.database(); return true; }
     catch(e) { console.error("Firebase init failed:", e); return false; }
   }
-  function push(gameId, state) { if (db) db.ref('trollhole/' + gameId).set(state); }
+  function push(gameId, state) { if (db) db.ref('circuitbreaker/' + gameId).set(state); }
   function onStateChange(gameId, cb) {
     unsubscribe();
     if (!db) return;
-    activeRef = db.ref('trollhole/' + gameId);
+    activeRef = db.ref('circuitbreaker/' + gameId);
     activeHandler = activeRef.on('value', snap => { if (snap.exists()) cb(snap.val()); });
   }
   function unsubscribe() {
@@ -298,291 +301,395 @@ const lobby = (() => {
 
 // ============================================================
 // SECTION 6 — GAME ENGINE  ← cartridge
+//
+// COORDINATE SYSTEM
+// -----------------
+// Blue dots occupy a 5-wide × 4-tall grid: col 0-4, row 0-3.
+// Red dots occupy a 4-wide × 5-tall grid: col 0-3, row 0-4.
+//
+// Pixel layout (in SVG space):
+//   Blue dot (bc, br) → pixel ( PAD + bc*CW,        PAD_TOP + br*CH )
+//   Red  dot (rc, rr) → pixel ( PAD + rc*CW + CW/2, PAD_TOP + rr*CH - CH/2 )
+//
+// Red row 0 sits ABOVE blue row 0 (the top circuit board).
+// Red row 4 sits BELOW blue row 3 (the bottom circuit board).
+// This means red rows 0 and 4 need vertical space outside the blue grid.
+//
+// CROSSING PAIRS (derived from pixel geometry)
+// --------------------------------------------
+// A blue HORIZONTAL edge  blue(bc,br)→blue(bc+1,br)
+//   crosses red VERTICAL  red(bc,br)→red(bc,br+1)
+//   because they share the same square interior.
+//   Valid when bc ∈ 0..3, br ∈ 0..3 (red rows 0..3 are interior verticals... 
+//   wait — red(bc,br)→red(bc,br+1): rr goes br to br+1, so rr in 0..3 means br in 0..3 ✓
+//   BUT we must check: does blue horiz(bc,br) actually cross red vert(bc,br→br+1)?
+//   Blue horiz sits at y = PAD_TOP + br*CH.
+//   Red vert goes from y = PAD_TOP + br*CH - CH/2  to  y = PAD_TOP + (br+1)*CH - CH/2
+//                     = PAD_TOP + br*CH - CH/2  to  PAD_TOP + br*CH + CH/2
+//   The blue horiz y IS between these two → ✓ they cross.
+//   The red vert x = PAD + bc*CW + CW/2, which is between blue cols bc and bc+1 → ✓
+//
+// A blue VERTICAL edge    blue(bc,br)→blue(bc,br+1)
+//   crosses red HORIZONTAL red(bc-1,br+1)→red(bc,br+1)
+//   Blue vert x = PAD + bc*CW.
+//   Red horiz y = PAD_TOP + (br+1)*CH - CH/2 = PAD_TOP + br*CH + CH/2
+//   which is between blue rows br and br+1 → ✓
+//   Red horiz x spans from PAD+(bc-1)*CW+CW/2 to PAD+bc*CW+CW/2,
+//   and bc*CW is between those → ✓
+//   Valid when bc ∈ 1..4, br ∈ 0..2 (br+1 ∈ 1..3 for red rows).
+//
 // ============================================================
 const engine = (() => {
 
-  const NEIGHBORS = {
-    0:[1,3,4],   1:[0,2,4,5],   2:[1,5,6],
-    3:[0,4,7,8], 4:[0,1,3,5,8,9], 5:[1,2,4,6,9,10], 6:[2,5,10,11],
-    7:[3,8,12],  8:[3,4,7,9,12,13], 9:[4,5,8,10,13,14], 10:[5,6,9,11,14,15], 11:[6,10,15],
-    12:[7,8,13,16], 13:[8,9,12,14,16,17], 14:[9,10,13,15,17,18], 15:[10,11,14,18],
-    16:[12,13,17], 17:[13,14,16,18], 18:[14,15,17]
-  };
+  function edgeKey(c1, r1, c2, r2) {
+    // Canonical form: smaller coordinate first
+    if (c1 > c2 || (c1 === c2 && r1 > r2)) return `${c2},${r2}-${c1},${r1}`;
+    return `${c1},${r1}-${c2},${r2}`;
+  }
+
+  // Circuit board pre-connections
+  function blueCircuit() {
+    const e = {};
+    for (const bc of [0, 4])
+      for (let br = 0; br < 3; br++) e[edgeKey(bc,br,bc,br+1)] = '_';
+    return e;
+  }
+
+  function redCircuit() {
+    const e = {};
+    for (const rr of [0, 4])
+      for (let rc = 0; rc < 3; rc++) e[edgeKey(rc,rr,rc+1,rr)] = '_';
+    return e;
+  }
+
+  // Build crossing lookup once
+  function buildCrossings() {
+    const map = {};
+    function add(a, b) {
+      if (!map[a]) map[a] = [];
+      if (!map[b]) map[b] = [];
+      if (!map[a].includes(b)) map[a].push(b);
+      if (!map[b].includes(a)) map[b].push(a);
+    }
+    // Blue horiz(bc,br,bc+1,br) × Red vert(bc,br,bc,br+1)
+    // bc: 0..3, br: 0..3
+    for (let bc = 0; bc <= 3; bc++)
+      for (let br = 0; br <= 3; br++)
+        add('b:' + edgeKey(bc,br,bc+1,br), 'r:' + edgeKey(bc,br,bc,br+1));
+
+    // Blue vert(bc,br,bc,br+1) × Red horiz(bc-1,br+1,bc,br+1)
+    // bc: 1..4, br: 0..2
+    for (let bc = 1; bc <= 4; bc++)
+      for (let br = 0; br <= 2; br++)
+        add('b:' + edgeKey(bc,br,bc,br+1), 'r:' + edgeKey(bc-1,br+1,bc,br+1));
+
+    return map;
+  }
+
+  const CROSSINGS = buildCrossings();
+
+  function blueNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 4) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 3) n.push([c, r+1]);
+    return n;
+  }
+
+  function redNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 3) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 4) n.push([c, r+1]);
+    return n;
+  }
+
+  function floodBlue(blueEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let r = 0; r <= 3; r++) { visited.add('0,'+r); q.push([0,r]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (c === 4) return true;
+      for (const [nc,nr] of blueNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (blueEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
+
+  function floodRed(redEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let c = 0; c <= 3; c++) { visited.add(c+',0'); q.push([c,0]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (r === 4) return true;
+      for (const [nc,nr] of redNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (redEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
 
   function initState(gameIndex) {
     return {
-      board: Array(19).fill(null),
-      turn: gameIndex % 2 === 0 ? 'blue' : 'red',
-      round: 1,
-      placements: 0,
-      result: 'playing',
-      winner: null,
-      scores: { blue: 0, red: 0 },
-      trollIndex: null,
+      blueEdges: blueCircuit(),
+      redEdges:  redCircuit(),
+      turn:      gameIndex % 2 === 0 ? 'blue' : 'red',
+      result:    'playing',
+      winner:    null,
       playerBlue: null,
-      playerRed: null,
-      gameIndex: gameIndex,
+      playerRed:  null,
+      gameIndex:  gameIndex,
     };
   }
 
-  function applyMove(state, cell, player) {
+  function applyMove(state, edgeKey, player) {
     if (state.result !== 'playing') return null;
-    if (state.board[cell]) return null;
-    if (player && player !== 'spectator' && state.turn !== player) return null;
+    if (state.turn !== player)      return null;
 
-    const board = state.board.map(c => c ? {...c} : null);
-    board[cell] = { number: state.round, color: state.turn, crossed: false };
+    const isBlue  = player === 'blue';
+    const myMap   = isBlue ? {...state.blueEdges} : {...state.redEdges};
+    const oppMap  = isBlue ? state.redEdges       : state.blueEdges;
+    const prefix  = isBlue ? 'b:' : 'r:';
+    const oppPfx  = isBlue ? 'r:' : 'b:';
 
-    let turn = state.turn === 'blue' ? 'red' : 'blue';
-    let placements = state.placements + 1;
-    let round = state.round;
-    let result = 'playing';
-    let winner = null;
-    let scores = { blue: 0, red: 0 };
-    let trollIndex = null;
+    if (myMap[edgeKey]) return null;  // already drawn
 
-    if (placements === 2) { placements = 0; round++; }
-
-    if (round === 10 && placements === 0) {
-      trollIndex = board.findIndex(c => !c);
-      const eaten = NEIGHBORS[trollIndex];
-      for (const n of eaten) { if (board[n]) board[n].crossed = true; }
-      for (const c of board) { if (c && !c.crossed) scores[c.color] += c.number; }
-      result = 'finished';
-      if (scores.blue > scores.red) winner = 'blue';
-      else if (scores.red > scores.blue) winner = 'red';
-      else winner = 'tie';
+    // Check crossing constraint
+    const crosses = CROSSINGS[prefix + edgeKey] || [];
+    for (const crossed of crosses) {
+      const crossKey = crossed.slice(2);  // strip 'b:' or 'r:' prefix
+      if (oppMap[crossKey]) return null;
     }
 
-    return { ...state, board, turn, round, placements, result, winner, scores, trollIndex };
+    myMap[edgeKey] = '_';
+
+    const next = {
+      ...state,
+      blueEdges: isBlue ? myMap : state.blueEdges,
+      redEdges:  isBlue ? state.redEdges : myMap,
+      turn: isBlue ? 'red' : 'blue',
+    };
+
+    if (isBlue && floodBlue(next.blueEdges)) return {...next, result:'win', winner:'blue'};
+    if (!isBlue && floodRed(next.redEdges))  return {...next, result:'win', winner:'red'};
+    return next;
   }
 
   function getStatus(s) { return { result: s.result, winner: s.winner }; }
 
-  return { initState, applyMove, getStatus, NEIGHBORS };
+  return { initState, applyMove, getStatus, edgeKey, blueNeighbors, redNeighbors };
 })();
-
 // ============================================================
 // SECTION 7 — UI  ← cartridge
+//
+// SVG LAYOUT
+// ----------
+// The viewBox is sized to include red rows 0 and 4 (which sit
+// half a cell above/below the blue grid).
+//
+// PAD_H = horizontal padding (room for circuit board lines)
+// PAD_TOP = top padding = HALF_CELL + margin (room for red row 0)
+// PAD_BOT = bottom padding = HALF_CELL + margin (room for red row 4)
 // ============================================================
 const ui = (() => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
 
-  // Hex grid layout: rows of [3,4,5,4,3] cells
-  const LAYOUT = [3, 4, 5, 4, 3];
-  const CELL = 66;
-  const VERT = CELL * 0.866;
-  const START_Y = 55;
-  const CENTER_X = 210;
+  // Board geometry constants
+  const COLS_B = 5, ROWS_B = 4;   // blue dot grid
+  const CELL   = 66;               // pixels per cell
+  const HALF   = CELL / 2;
+  const PAD_H  = 28;               // horizontal padding
+  const PAD_V  = 28;               // vertical padding beyond red circuit rows
 
-  const POSITIONS = [];
-  let idx = 0;
-  for (let row = 0; row < LAYOUT.length; row++) {
-    const count = LAYOUT[row];
-    const startX = CENTER_X - ((count - 1) * CELL) / 2;
-    for (let i = 0; i < count; i++) {
-      POSITIONS[idx++] = [startX + i * CELL, START_Y + row * VERT];
-    }
-  }
+  // SVG total size
+  const SVG_W = PAD_H * 2 + (COLS_B - 1) * CELL;
+  const SVG_H = PAD_V * 2 + (ROWS_B - 1) * CELL + CELL;  // +CELL for top+bottom half-cells
 
-  let onMoveCb = null;
-  let hoverIndex = null;
-  let currentState = null;
-  let currentRole = null;
-  let endAnimatedKey = null;
-  let animationTimers = [];
+  // Origin: where blue(0,0) sits in SVG space
+  const OX = PAD_H;
+  const OY = PAD_V + HALF;  // shifted down by half cell to make room for red row 0
+
+  function bluePos(c, r) { return { x: OX + c * CELL, y: OY + r * CELL }; }
+  function redPos(c, r)  { return { x: OX + c * CELL + HALF, y: OY + r * CELL - HALF }; }
 
   function mkEl(tag, attrs) {
     const e = document.createElementNS(SVG_NS, tag);
-    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
     return e;
   }
 
-  function buildTrollFace(cx, cy) {
-    const g = document.createElementNS(SVG_NS, 'g');
-    g.setAttribute('visibility', 'hidden');
-    const fg = document.createElementNS(SVG_NS, 'g');
-    const sc = 0.25, tx = cx - 19, ty = cy - 19;
-    fg.setAttribute('transform', `translate(${tx},${ty}) scale(${sc})`);
-
-    function p(d, fill) {
-      const el = document.createElementNS(SVG_NS, 'path');
-      el.setAttribute('d', d); el.setAttribute('fill', fill); return el;
-    }
-    function c(cx2, cy2, r, fill) {
-      const el = document.createElementNS(SVG_NS, 'circle');
-      el.setAttribute('cx', cx2); el.setAttribute('cy', cy2);
-      el.setAttribute('r', r); el.setAttribute('fill', fill); return el;
-    }
-    function el(cx2, cy2, rx, ry, fill, tf) {
-      const e = document.createElementNS(SVG_NS, 'ellipse');
-      e.setAttribute('cx', cx2); e.setAttribute('cy', cy2);
-      e.setAttribute('rx', rx); e.setAttribute('ry', ry);
-      e.setAttribute('fill', fill);
-      if (tf) e.setAttribute('transform', tf); return e;
-    }
-
-    fg.appendChild(p('M74.52,109.15c-28.73,0-54.89-8.04-74.52-21.21,7.43,36.53,38.64,63.96,76.02,63.96s69.94-28.64,76.46-66.36c-19.96,14.59-47.52,23.62-77.96,23.62Z', '#010101'));
-    fg.appendChild(p('M73.77,67.27c-21.05,0-38.64-14.03-42.94-32.76,0,.33-.03.66-.03.99,0,23,19.24,41.65,42.97,41.65s42.97-18.65,42.97-41.65c0-.33-.02-.66-.03-.99-4.3,18.73-21.89,32.76-42.94,32.76Z', '#010101'));
-    fg.appendChild(c(71.73, 27.91, 27.91, '#010101'));
-    fg.appendChild(p('M33.99,133.62c8.71,8.18,24.38,13.63,42.26,13.63,18.8,0,35.15-6.03,43.54-14.91-8.71-8.18-24.38-13.63-42.26-13.63-18.8,0-35.15,6.03-43.54,14.91Z', '#ffffff'));
-    fg.appendChild(el(58.48, 20, 10.24, 8.55, '#ffffff', 'translate(14.2 63.12) rotate(-63.12)'));
-    fg.appendChild(p('M117.76,105.38s3.55,8.15,3.1,12.21c-.45,4.07,4.87,2.23,6.21,1.31s5.63-10.65,2.76-16.75l-12.07,3.23Z', '#ffffff'));
-    fg.appendChild(p('M32.15,106.84s-3.63,8.97-3.38,13.48-4.61,2.39-5.82,1.36-4.8-11.88-1.88-18.59l11.08,3.75Z', '#ffffff'));
-    g.appendChild(fg);
-    return g;
-  }
+  let onMoveCb = null;
+  let selectedDot = null;
+  let currentState = null;
+  let currentRole  = null;
+  let layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo;
 
   function buildBoard(onMove) {
     onMoveCb = onMove;
-    hoverIndex = null;
-    currentState = null;
-    currentRole = null;
+    selectedDot = null;
 
     const svg = document.getElementById('board-svg');
     svg.innerHTML = '';
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
 
-    for (let i = 0; i < POSITIONS.length; i++) {
-      const [cx, cy] = POSITIONS[i];
-      const g = document.createElementNS(SVG_NS, 'g');
+    layerBluGrid = mkEl('g', {});
+    layerRedGrid = mkEl('g', {});
+    layerEdges   = mkEl('g', {});
+    layerDots    = mkEl('g', {});
+    layerHalo    = mkEl('g', {});
+    svg.append(layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo);
 
-      const circle = mkEl('circle', { cx, cy, r: 28, fill: '#eee', style: 'cursor:pointer' });
-      circle.addEventListener('click', () => onMoveCb(i));
-      circle.addEventListener('mouseenter', () => { hoverIndex = i; renderPreview(); });
-      circle.addEventListener('mouseleave', () => { hoverIndex = null; renderPreview(); });
-
-      const text = mkEl('text', {
-        x: cx, y: cy + 6, 'text-anchor': 'middle',
-        'font-family': 'Outfit,sans-serif', 'font-size': 18,
-        'font-weight': 900, 'pointer-events': 'none'
-      });
-
-      const face = buildTrollFace(cx, cy);
-
-      g.appendChild(circle);
-      g.appendChild(text);
-      g.appendChild(face);
-      svg.appendChild(g);
+    // Background grid hint lines — blue
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        if (c < COLS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c+1,r);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+        if (r < ROWS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c,r+1);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+      }
     }
 
-    svg.addEventListener('click', e => { if (e.target === svg) { hoverIndex = null; renderPreview(); } });
+    // Background grid hint lines — red
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        if (c < 3) {
+          const p1 = redPos(c,r), p2 = redPos(c+1,r);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+        if (r < 4) {
+          const p1 = redPos(c,r), p2 = redPos(c,r+1);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+      }
+    }
+
+    // Blue dots
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        const p = bluePos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#1a3adb','data-color':'blue','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    // Red dots
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        const p = redPos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#cc1111','data-color':'red','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    svg.addEventListener('click', e => { if (e.target === svg) clearSel(); });
   }
 
-  function clearAnimations() {
-    animationTimers.forEach(id => clearTimeout(id));
-    animationTimers = [];
-    endAnimatedKey = null;
+  function onDotClick(e) {
+    e.stopPropagation();
+    if (!currentState || currentState.result !== 'playing') return;
+    const color = e.target.getAttribute('data-color');
+    const c = +e.target.getAttribute('data-c');
+    const r = +e.target.getAttribute('data-r');
+    const turn = currentState.turn;
+
+    // Must be your color and your turn
+    if (currentRole !== 'spectator' && color !== currentRole) return;
+    if (color !== turn) return;
+
+    if (!selectedDot) {
+      selectedDot = {color, c, r};
+      drawHalo(color, c, r);
+    } else {
+      if (selectedDot.color === color && selectedDot.c === c && selectedDot.r === r) {
+        clearSel(); return;
+      }
+      if (selectedDot.color !== color) {
+        clearSel();
+        if (color === turn && (currentRole === 'spectator' || color === currentRole)) {
+          selectedDot = {color, c, r}; drawHalo(color, c, r);
+        }
+        return;
+      }
+      // Only complete move if second dot is adjacent to first
+      const neighbors = color === 'blue'
+        ? engine.blueNeighbors(selectedDot.c, selectedDot.r)
+        : engine.redNeighbors(selectedDot.c, selectedDot.r);
+      const isAdjacent = neighbors.some(([nc,nr]) => nc === c && nr === r);
+      if (!isAdjacent) {
+        // Not a neighbor — reselect this dot instead
+        clearSel();
+        selectedDot = {color, c, r};
+        drawHalo(color, c, r);
+        return;
+      }
+      const key = engine.edgeKey(selectedDot.c, selectedDot.r, c, r);
+      clearSel();
+      onMoveCb(key);
+    }
   }
+
+  function drawHalo(color, c, r) {
+    layerHalo.innerHTML = '';
+    const p = color === 'blue' ? bluePos(c,r) : redPos(c,r);
+    layerHalo.appendChild(mkEl('circle', {
+      cx:p.x, cy:p.y, r:16,
+      fill: color === 'blue' ? '#1a3adb' : '#cc1111',
+      opacity:'0.22'
+    }));
+  }
+
+  function clearSel() { selectedDot = null; layerHalo.innerHTML = ''; }
 
   function renderBoard(state, role) {
     if (!state) return;
     currentState = state;
-    currentRole = role;
+    currentRole  = role;
 
-    const svg = document.getElementById('board-svg');
-    const nodes = svg.children;
+    // Show only active player's grid hint
+    layerBluGrid.setAttribute('opacity', state.turn === 'blue' ? '0.15' : '0');
+    layerRedGrid.setAttribute('opacity', state.turn === 'red'  ? '0.15' : '0');
 
-    for (let i = 0; i < nodes.length; i++) {
-      const g = nodes[i];
-      const circle = g.children[0];
-      const text = g.children[1];
-      const face = g.children[2];
+    layerEdges.innerHTML = '';
+    const bEdges = state.blueEdges || {};
+    const rEdges = state.redEdges  || {};
 
-      text.removeAttribute('opacity');
-      face.setAttribute('visibility', 'hidden');
-      circle.classList.remove('circle-fade');
+    for (const key of Object.keys(bEdges)) drawEdge(key, 'blue');
+    for (const key of Object.keys(rEdges)) drawEdge(key, 'red');
 
-      // Normalize board cell (Firebase may deserialize objects)
-      const raw = state.board ? state.board[i] : null;
-      const cell = raw && typeof raw === 'object' ? raw : null;
-
-      if (!cell) {
-        text.textContent = '';
-        text.setAttribute('fill', '#000');
-        circle.setAttribute('fill', '#eee');
-      } else {
-        text.textContent = cell.number;
-        text.setAttribute('fill', '#fff');
-        circle.setAttribute('fill', cell.color === 'blue' ? '#1a3adb' : '#cc1111');
-        if (cell.crossed) circle.classList.add('circle-fade');
-      }
-    }
-
-    renderPreview();
-
-    if (state.result === 'finished') {
-      const animKey = JSON.stringify(state.trollIndex) + state.result;
-      if (endAnimatedKey !== animKey) {
-        clearAnimations();
-        animateEnd(state);
-        endAnimatedKey = animKey;
-      }
-    } else {
-      clearAnimations();
-    }
+    if (role !== 'spectator' && state.turn !== role) clearSel();
   }
 
-  function renderPreview() {
-    const svg = document.getElementById('board-svg');
-    if (!svg || !currentState) return;
-    const nodes = svg.children;
-
-    // Clear all previews first
-    for (let i = 0; i < nodes.length; i++) {
-      const text = nodes[i].children[1];
-      if (!currentState.board || !currentState.board[i]) {
-        text.textContent = '';
-        text.removeAttribute('opacity');
-      }
-    }
-
-    if (currentState.result !== 'playing') return;
-    if (hoverIndex === null) return;
-    const raw = currentState.board ? currentState.board[hoverIndex] : null;
-    if (raw) return; // cell occupied
-
-    // Only show preview if it's this player's turn (or spectator/local)
-    if (currentRole !== 'spectator' && currentRole !== currentState.turn) return;
-
-    const text = nodes[hoverIndex].children[1];
-    text.textContent = currentState.round;
-    text.setAttribute('fill', currentState.turn === 'blue' ? '#1a3adb' : '#cc1111');
-    text.setAttribute('opacity', '0.4');
-  }
-
-  function animateEnd(state) {
-    const svg = document.getElementById('board-svg');
-    if (!svg) return;
-    const nodes = svg.children;
-    const troll = state.trollIndex;
-    if (troll === null || troll === undefined) return;
-
-    const g = nodes[troll];
-    const circle = g.children[0];
-    const face = g.children[2];
-
-    animationTimers.push(setTimeout(() => {
-      circle.setAttribute('fill', '#3aa655');
-    }, 200));
-    animationTimers.push(setTimeout(() => {
-      face.setAttribute('visibility', 'visible');
-    }, 500));
-
-    const eaten = engine.NEIGHBORS[troll];
-    let delay = 800;
-    for (const n of eaten) {
-      const gn = nodes[n];
-      const c = gn.children[0];
-      animationTimers.push(setTimeout(() => {
-        c.classList.add('circle-fade');
-      }, delay));
-      delay += 250;
-    }
+  function drawEdge(key, color) {
+    const parts = key.split('-');
+    if (parts.length !== 2) return;
+    const [c1,r1] = parts[0].split(',').map(Number);
+    const [c2,r2] = parts[1].split(',').map(Number);
+    if ([c1,r1,c2,r2].some(isNaN)) return;
+    const p1 = color === 'blue' ? bluePos(c1,r1) : redPos(c1,r1);
+    const p2 = color === 'blue' ? bluePos(c2,r2) : redPos(c2,r2);
+    layerEdges.appendChild(mkEl('line', {
+      x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y,
+      stroke: color === 'blue' ? '#1a3adb' : '#cc1111',
+      'stroke-width': 4.5, 'stroke-linecap': 'round'
+    }));
   }
 
   function renderStatus(state, role) {
-    const ind = document.getElementById('turn-indicator');
-    const gs = document.getElementById('game-status');
+    const ind      = document.getElementById('turn-indicator');
+    const gs       = document.getElementById('game-status');
     const btnAgain = document.getElementById('btn-again');
     const cw = c => `<span class="color-${c}">${c.toUpperCase()}</span>`;
 
@@ -590,27 +697,20 @@ const ui = (() => {
       btnAgain.classList.add('hidden');
       gs.textContent = '';
       const t = state.turn;
-      if (role === 'spectator')     ind.innerHTML = `${cw(t)}: Place ${state.round}`;
-      else if (t === role)          ind.innerHTML = `Your turn, ${cw(role)}: Place ${state.round}`;
-      else                          ind.innerHTML = `Opponent's turn — ${cw(t)}: Place ${state.round}`;
+      if (role === 'spectator')   ind.innerHTML = `${cw(t)}'s Turn`;
+      else if (t === role)        ind.innerHTML = `Your turn, playing ${cw(role)}`;
+      else                        ind.innerHTML = `Opponent's turn, playing ${cw(t)}`;
     } else {
       ind.innerHTML = '';
       btnAgain.classList.remove('hidden');
-      if (state.winner === 'tie') {
-        gs.innerHTML = `Tie — <span class="color-blue">Blue ${state.scores.blue}</span> / <span class="color-red">Red ${state.scores.red}</span>`;
-      } else {
-        const w = state.winner;
-        const loser = w === 'blue' ? 'red' : 'blue';
-        const ws = w === 'blue' ? state.scores.blue : state.scores.red;
-        const ls = w === 'blue' ? state.scores.red : state.scores.blue;
-        if (role === 'spectator') gs.innerHTML = `${cw(w)} wins! ${ws}–${ls}`;
-        else if (w === role)      gs.innerHTML = `You win! ${ws}–${ls}`;
-        else                      gs.innerHTML = `You lose. ${ws}–${ls}`;
-      }
+      const w = state.winner;
+      if (role === 'spectator')   gs.innerHTML = `${cw(w)} wins!`;
+      else if (w === role)        gs.innerHTML = `You win! ${cw(w)} connected!`;
+      else                        gs.innerHTML = `You lose. ${cw(w)} connected.`;
     }
   }
 
-  return { buildBoard, renderBoard, renderStatus, clearAnimations };
+  return { buildBoard, renderBoard, renderStatus };
 })();
 
 // ============================================================
@@ -622,24 +722,19 @@ const ui = (() => {
   function showLobby() { screenLobby.classList.remove('hidden'); screenGame.classList.add('hidden'); }
   function showGame()  { screenLobby.classList.add('hidden'); screenGame.classList.remove('hidden'); }
 
-  let currentState = null, currentRole = 'spectator', currentGameId = null, isLocal = false;
+  let currentState = null, currentRole = 'blue', currentGameId = null, isLocal = false;
 
   function normalizeState(state) {
     if (!state) return state;
-    // Firebase may return board as object with numeric keys — normalize to array
-    if (state.board && !Array.isArray(state.board)) {
-      const arr = [];
-      for (let i = 0; i < 19; i++) arr[i] = state.board[i] || null;
-      state.board = arr;
-    }
-    if (!state.scores) state.scores = { blue: 0, red: 0 };
+    if (!state.blueEdges) state.blueEdges = {};
+    if (!state.redEdges)  state.redEdges  = {};
     return state;
   }
 
-  function handleMove(cell) {
+  function handleMove(edgeKey) {
     if (!currentState) return;
     if (isLocal) {
-      const next = engine.applyMove(currentState, cell, 'spectator');
+      const next = engine.applyMove(currentState, edgeKey, currentState.turn);
       if (!next) return;
       currentState = next;
       ui.renderBoard(currentState, 'spectator');
@@ -647,7 +742,7 @@ const ui = (() => {
       return;
     }
     if (currentState.turn !== currentRole) return;
-    const next = engine.applyMove(currentState, cell, currentRole);
+    const next = engine.applyMove(currentState, edgeKey, currentRole);
     if (!next) return;
     next.playerBlue = currentState.playerBlue;
     next.playerRed  = currentState.playerRed;
@@ -696,7 +791,7 @@ const ui = (() => {
     document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
     syncAdapter.push(gameId, state);
     syncAdapter.onStateChange(gameId, remote => {
-      if (remote.playerRed && remote.board) {
+      if (remote.playerRed && remote.blueEdges) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
         startRemoteGame(gameId, remote);
@@ -710,7 +805,7 @@ const ui = (() => {
     document.getElementById('link-panel').classList.add('visible');
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('lobby-status').textContent = 'Joining game…';
-    firebase.database().ref('trollhole/' + gameId).once('value').then(snap => {
+    firebase.database().ref('circuitbreaker/' + gameId).once('value').then(snap => {
       if (!snap.exists()) { document.getElementById('lobby-status').textContent = 'Game not found.'; return; }
       const state = snap.val();
       if (state.playerBlue === identity.id) { startRemoteGame(gameId, state); return; }
@@ -740,7 +835,6 @@ const ui = (() => {
 
   document.getElementById('btn-menu').addEventListener('click', () => {
     syncAdapter.unsubscribe(); isLocal = false;
-    ui.clearAnimations();
     const u = new URL(window.location.href); u.searchParams.delete('game');
     window.history.replaceState({}, '', u.toString());
     document.getElementById('link-panel').classList.remove('visible');

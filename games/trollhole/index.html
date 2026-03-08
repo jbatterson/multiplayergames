@@ -636,6 +636,7 @@ const ui = (() => {
     }
     if (currentState.turn !== currentRole) return;
     const next = engine.applyMove(currentState, cell, currentRole);
+    console.log('applyMove result:', next, 'board[cell]:', currentState.board[cell]);
     if (!next) return;
     next.playerBlue = currentState.playerBlue;
     next.playerRed  = currentState.playerRed;
