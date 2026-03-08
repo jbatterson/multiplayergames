@@ -636,7 +636,10 @@ const ui = (() => {
       ui.renderStatus(currentState, 'spectator');
       return;
     }
-    if (state.turn !== role) return;
+    if (state.turn !== role) {
+      console.log('BLOCKED — state.turn:', JSON.stringify(state.turn), 'role:', JSON.stringify(role), 'equal:', state.turn === role);
+      return;
+    }
     const next = engine.applyMove(state, cell, role);
     console.log('applyMove result:', next, 'board[cell]:', state.board[cell]);
     if (!next) return;
