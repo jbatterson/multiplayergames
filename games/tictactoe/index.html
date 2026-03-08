@@ -634,6 +634,7 @@ const ui = (() => {
     syncAdapter.push(gameId, state);
 
     syncAdapter.onStateChange(gameId, remoteState => {
+      console.log('Player 1 listener fired:', JSON.stringify(remoteState));
       if (remoteState.playerO && remoteState.board) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
