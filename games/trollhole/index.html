@@ -624,24 +624,24 @@ const ui = (() => {
   }
 
   function handleMove(cell) {
-    if (!currentState) return;
+    if (!currentState) { console.log('NO STATE'); return; }
     const state = currentState;
     const role = currentRole;
-    console.log('handleMove — cell:', cell, 'turn:', state.turn, 'role:', role, 'isLocal:', isLocal);
-    if (isLocal) {
+    const isLoc = isLocal;
+    console.log('HM cell:', cell, 'turn:', state.turn, 'role:', role, 'local:', isLoc);
+    if (isLoc) {
       const next = engine.applyMove(state, cell, 'spectator');
-      if (!next) return;
+      if (!next) { console.log('LOCAL applyMove null'); return; }
       currentState = next;
       ui.renderBoard(currentState, 'spectator');
       ui.renderStatus(currentState, 'spectator');
       return;
     }
-    if (state.turn !== role) {
-      console.log('BLOCKED — state.turn:', JSON.stringify(state.turn), 'role:', JSON.stringify(role), 'equal:', state.turn === role);
-      return;
-    }
+    console.log('REMOTE PATH — about to check turn');
+    if (state.turn !== role) { console.log('TURN MISMATCH'); return; }
+    console.log('TURN OK — calling applyMove');
     const next = engine.applyMove(state, cell, role);
-    console.log('applyMove result:', next, 'board[cell]:', state.board[cell]);
+    console.log('applyMove returned:', next ? 'state' : 'null');
     if (!next) return;
     next.playerBlue = state.playerBlue;
     next.playerRed  = state.playerRed;
