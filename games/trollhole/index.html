@@ -100,6 +100,7 @@
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
+    .link-instructions { font-size: 0.7rem; font-weight: 600; text-align: center; color: #444; }
     .status-line {
       font-size: 0.65rem; font-weight: 900;
       letter-spacing: 0.2em; text-transform: uppercase;
@@ -191,6 +192,7 @@
     <div class="lobby-divider">or</div>
     <button class="btn" id="btn-challenge">Challenge a Friend</button>
     <div id="link-panel">
+      <p class="link-instructions">Send this link to a friend. The game starts when they open it.</p>
       <div class="link-box">
         <div id="share-url"></div>
         <button class="btn" id="copy-btn">Copy</button>
@@ -690,6 +692,7 @@ const ui = (() => {
     lobby.pushUrlState(gameId);
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('btn-challenge').classList.add('hidden');
     document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
     syncAdapter.push(gameId, state);
     syncAdapter.onStateChange(gameId, remote => {
@@ -741,6 +744,7 @@ const ui = (() => {
     const u = new URL(window.location.href); u.searchParams.delete('game');
     window.history.replaceState({}, '', u.toString());
     document.getElementById('link-panel').classList.remove('visible');
+    document.getElementById('btn-challenge').classList.remove('hidden');
     showLobby();
   });
 
