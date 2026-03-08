@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circuit Breaker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #fff;
+      color: #000;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 28px 16px 40px;
+    }
+    .game-container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-weight: 900;
+      font-size: 2.25rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .btn {
+      width: 100%;
+      padding: 1rem 0;
+      border: 2px solid #000;
+      background: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+    }
+    .btn:hover:not(:disabled) { background: #000; color: #fff; }
+    .btn:disabled { opacity: 0.2; cursor: not-allowed; }
+    .btn-primary {
+      background: #000; color: #fff;
+      font-weight: 900; font-size: 0.8rem; letter-spacing: 0.12em;
+    }
+    .btn-primary:hover:not(:disabled) { background: #333; }
+    #screen-lobby {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .lobby-divider {
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #999; margin: 0.25rem 0;
+    }
+    #link-panel {
+      width: 100%; border: 2px solid #000;
+      padding: 1rem; display: none;
+      flex-direction: column; gap: 0.75rem;
+    }
+    #link-panel.visible { display: flex; }
+    .link-box { display: flex; gap: 0.5rem; align-items: stretch; }
+    #share-url {
+      flex: 1; border: 2px solid #000;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem; color: #000; background: #f9f9f9;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
+    .status-line {
+      font-size: 0.65rem; font-weight: 900;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      text-align: center; min-height: 1em;
+    }
+    #screen-game {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .turn-indicator {
+      margin-bottom: 0.75rem;
+      font-size: 0.7rem; font-weight: 900;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      text-align: center; min-height: 1.4em;
+    }
+    .turn-indicator .color-blue { color: #1a3adb; }
+    .turn-indicator .color-red  { color: #cc1111; }
+    #board-svg {
+      width: 100%; max-width: 400px;
+      display: block; margin-bottom: 1.25rem;
+      touch-action: manipulation;
+    }
+    .game-controls {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <h1 class="title">Circuit Breaker</h1>
+
+  <div id="screen-lobby">
+    <button class="btn" id="btn-local">Play on This Device</button>
+    <div class="lobby-divider">or</div>
+    <button class="btn" id="btn-challenge">Challenge a Friend</button>
+    <div id="link-panel">
+      <div class="link-box">
+        <div id="share-url"></div>
+        <button class="btn" id="copy-btn">Copy</button>
+      </div>
+      <div class="status-line" id="lobby-status"></div>
+    </div>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div class="turn-indicator" id="turn-indicator"></div>
+    <svg id="board-svg"></svg>
+    <div class="game-controls">
+      <div class="status-line" id="game-status"></div>
+      <button class="btn btn-primary hidden" id="btn-again">Play Again</button>
+      <button class="btn" id="btn-menu">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+"use strict";
+
+// ============================================================
+// SECTION 1 — CONFIG / CONSTANTS
+// ============================================================
+const CONFIG = {
+  gameIdLength: 4,
+  gameIdChars: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+};
+
+// ============================================================
+// SECTION 2 — FIREBASE CONFIG
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID",
+};
+
+// ============================================================
+// SECTION 3 — SYNC ADAPTER
+// ============================================================
+const syncAdapter = (() => {
+  let db = null, activeRef = null, activeHandler = null;
+  function init() {
+    if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") return false;
+    try { firebase.initializeApp(FIREBASE_CONFIG); db = firebase.database(); return true; }
+    catch(e) { console.error("Firebase init failed:", e); return false; }
+  }
+  function push(gameId, state) { if (db) db.ref('circuitbreaker/' + gameId).set(state); }
+  function onStateChange(gameId, cb) {
+    unsubscribe();
+    if (!db) return;
+    activeRef = db.ref('circuitbreaker/' + gameId);
+    activeHandler = activeRef.on('value', snap => { if (snap.exists()) cb(snap.val()); });
+  }
+  function unsubscribe() {
+    if (activeRef && activeHandler) activeRef.off('value', activeHandler);
+    activeRef = null; activeHandler = null;
+  }
+  const ready = init();
+  return { push, onStateChange, unsubscribe, ready };
+})();
+
+// ============================================================
+// SECTION 4 — PLAYER IDENTITY
+// ============================================================
+const identity = (() => {
+  const KEY = 'cb_player_id';
+  let id = localStorage.getItem(KEY);
+  if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem(KEY, id); }
+  function getRole(state) {
+    if (state.playerBlue === id) return 'blue';
+    if (state.playerRed  === id) return 'red';
+    return 'spectator';
+  }
+  return { id, getRole };
+})();
+
+// ============================================================
+// SECTION 5 — LOBBY / URL LOGIC
+// ============================================================
+const lobby = (() => {
+  function generateId() {
+    let id = '';
+    for (let i = 0; i < CONFIG.gameIdLength; i++)
+      id += CONFIG.gameIdChars[Math.floor(Math.random() * CONFIG.gameIdChars.length)];
+    return id;
+  }
+  function getGameIdFromUrl() { return new URLSearchParams(window.location.search).get('game'); }
+  function buildShareUrl(gameId) {
+    const u = new URL(window.location.href); u.search = ''; u.searchParams.set('game', gameId); return u.toString();
+  }
+  function pushUrlState(gameId) { window.history.replaceState({}, '', buildShareUrl(gameId)); }
+  return { generateId, getGameIdFromUrl, buildShareUrl, pushUrlState };
+})();
+
+// ============================================================
+// SECTION 6 — GAME ENGINE  ← cartridge
+//
+// COORDINATE SYSTEM
+// -----------------
+// Blue dots occupy a 5-wide × 4-tall grid: col 0-4, row 0-3.
+// Red dots occupy a 4-wide × 5-tall grid: col 0-3, row 0-4.
+//
+// Pixel layout (in SVG space):
+//   Blue dot (bc, br) → pixel ( PAD + bc*CW,        PAD_TOP + br*CH )
+//   Red  dot (rc, rr) → pixel ( PAD + rc*CW + CW/2, PAD_TOP + rr*CH - CH/2 )
+//
+// Red row 0 sits ABOVE blue row 0 (the top circuit board).
+// Red row 4 sits BELOW blue row 3 (the bottom circuit board).
+// This means red rows 0 and 4 need vertical space outside the blue grid.
+//
+// CROSSING PAIRS (derived from pixel geometry)
+// --------------------------------------------
+// A blue HORIZONTAL edge  blue(bc,br)→blue(bc+1,br)
+//   crosses red VERTICAL  red(bc,br)→red(bc,br+1)
+//   because they share the same square interior.
+//   Valid when bc ∈ 0..3, br ∈ 0..3 (red rows 0..3 are interior verticals... 
+//   wait — red(bc,br)→red(bc,br+1): rr goes br to br+1, so rr in 0..3 means br in 0..3 ✓
+//   BUT we must check: does blue horiz(bc,br) actually cross red vert(bc,br→br+1)?
+//   Blue horiz sits at y = PAD_TOP + br*CH.
+//   Red vert goes from y = PAD_TOP + br*CH - CH/2  to  y = PAD_TOP + (br+1)*CH - CH/2
+//                     = PAD_TOP + br*CH - CH/2  to  PAD_TOP + br*CH + CH/2
+//   The blue horiz y IS between these two → ✓ they cross.
+//   The red vert x = PAD + bc*CW + CW/2, which is between blue cols bc and bc+1 → ✓
+//
+// A blue VERTICAL edge    blue(bc,br)→blue(bc,br+1)
+//   crosses red HORIZONTAL red(bc-1,br+1)→red(bc,br+1)
+//   Blue vert x = PAD + bc*CW.
+//   Red horiz y = PAD_TOP + (br+1)*CH - CH/2 = PAD_TOP + br*CH + CH/2
+//   which is between blue rows br and br+1 → ✓
+//   Red horiz x spans from PAD+(bc-1)*CW+CW/2 to PAD+bc*CW+CW/2,
+//   and bc*CW is between those → ✓
+//   Valid when bc ∈ 1..4, br ∈ 0..2 (br+1 ∈ 1..3 for red rows).
+//
+// ============================================================
+const engine = (() => {
+
+  function edgeKey(c1, r1, c2, r2) {
+    // Canonical form: smaller coordinate first
+    if (c1 > c2 || (c1 === c2 && r1 > r2)) return `${c2},${r2}-${c1},${r1}`;
+    return `${c1},${r1}-${c2},${r2}`;
+  }
+
+  // Circuit board pre-connections
+  function blueCircuit() {
+    const e = {};
+    for (const bc of [0, 4])
+      for (let br = 0; br < 3; br++) e[edgeKey(bc,br,bc,br+1)] = '_';
+    return e;
+  }
+
+  function redCircuit() {
+    const e = {};
+    for (const rr of [0, 4])
+      for (let rc = 0; rc < 3; rc++) e[edgeKey(rc,rr,rc+1,rr)] = '_';
+    return e;
+  }
+
+  // Build crossing lookup once
+  function buildCrossings() {
+    const map = {};
+    function add(a, b) {
+      if (!map[a]) map[a] = [];
+      if (!map[b]) map[b] = [];
+      if (!map[a].includes(b)) map[a].push(b);
+      if (!map[b].includes(a)) map[b].push(a);
+    }
+    // Blue horiz(bc,br,bc+1,br) × Red vert(bc,br,bc,br+1)
+    // bc: 0..3, br: 0..3
+    for (let bc = 0; bc <= 3; bc++)
+      for (let br = 0; br <= 3; br++)
+        add('b:' + edgeKey(bc,br,bc+1,br), 'r:' + edgeKey(bc,br,bc,br+1));
+
+    // Blue vert(bc,br,bc,br+1) × Red horiz(bc-1,br+1,bc,br+1)
+    // bc: 1..4, br: 0..2
+    for (let bc = 1; bc <= 4; bc++)
+      for (let br = 0; br <= 2; br++)
+        add('b:' + edgeKey(bc,br,bc,br+1), 'r:' + edgeKey(bc-1,br+1,bc,br+1));
+
+    return map;
+  }
+
+  const CROSSINGS = buildCrossings();
+
+  function blueNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 4) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 3) n.push([c, r+1]);
+    return n;
+  }
+
+  function redNeighbors(c, r) {
+    const n = [];
+    if (c > 0) n.push([c-1, r]);
+    if (c < 3) n.push([c+1, r]);
+    if (r > 0) n.push([c, r-1]);
+    if (r < 4) n.push([c, r+1]);
+    return n;
+  }
+
+  function floodBlue(blueEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let r = 0; r <= 3; r++) { visited.add('0,'+r); q.push([0,r]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (c === 4) return true;
+      for (const [nc,nr] of blueNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (blueEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
+
+  function floodRed(redEdges) {
+    const visited = new Set();
+    const q = [];
+    for (let c = 0; c <= 3; c++) { visited.add(c+',0'); q.push([c,0]); }
+    while (q.length) {
+      const [c,r] = q.shift();
+      if (r === 4) return true;
+      for (const [nc,nr] of redNeighbors(c,r)) {
+        const k = nc+','+nr;
+        if (redEdges[edgeKey(c,r,nc,nr)] && !visited.has(k)) { visited.add(k); q.push([nc,nr]); }
+      }
+    }
+    return false;
+  }
+
+  function initState(gameIndex) {
+    return {
+      blueEdges: blueCircuit(),
+      redEdges:  redCircuit(),
+      turn:      gameIndex % 2 === 0 ? 'blue' : 'red',
+      result:    'playing',
+      winner:    null,
+      playerBlue: null,
+      playerRed:  null,
+      gameIndex:  gameIndex,
+    };
+  }
+
+  function applyMove(state, edgeKey, player) {
+    if (state.result !== 'playing') return null;
+    if (state.turn !== player)      return null;
+
+    const isBlue  = player === 'blue';
+    const myMap   = isBlue ? {...state.blueEdges} : {...state.redEdges};
+    const oppMap  = isBlue ? state.redEdges       : state.blueEdges;
+    const prefix  = isBlue ? 'b:' : 'r:';
+    const oppPfx  = isBlue ? 'r:' : 'b:';
+
+    if (myMap[edgeKey]) return null;  // already drawn
+
+    // Check crossing constraint
+    const crosses = CROSSINGS[prefix + edgeKey] || [];
+    for (const crossed of crosses) {
+      const crossKey = crossed.slice(2);  // strip 'b:' or 'r:' prefix
+      if (oppMap[crossKey]) return null;
+    }
+
+    myMap[edgeKey] = '_';
+
+    const next = {
+      ...state,
+      blueEdges: isBlue ? myMap : state.blueEdges,
+      redEdges:  isBlue ? state.redEdges : myMap,
+      turn: isBlue ? 'red' : 'blue',
+    };
+
+    if (isBlue && floodBlue(next.blueEdges)) return {...next, result:'win', winner:'blue'};
+    if (!isBlue && floodRed(next.redEdges))  return {...next, result:'win', winner:'red'};
+    return next;
+  }
+
+  function getStatus(s) { return { result: s.result, winner: s.winner }; }
+
+  return { initState, applyMove, getStatus, edgeKey, blueNeighbors, redNeighbors };
+})();
+// ============================================================
+// SECTION 7 — UI  ← cartridge
+//
+// SVG LAYOUT
+// ----------
+// The viewBox is sized to include red rows 0 and 4 (which sit
+// half a cell above/below the blue grid).
+//
+// PAD_H = horizontal padding (room for circuit board lines)
+// PAD_TOP = top padding = HALF_CELL + margin (room for red row 0)
+// PAD_BOT = bottom padding = HALF_CELL + margin (room for red row 4)
+// ============================================================
+const ui = (() => {
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // Board geometry constants
+  const COLS_B = 5, ROWS_B = 4;   // blue dot grid
+  const CELL   = 66;               // pixels per cell
+  const HALF   = CELL / 2;
+  const PAD_H  = 28;               // horizontal padding
+  const PAD_V  = 28;               // vertical padding beyond red circuit rows
+
+  // SVG total size
+  const SVG_W = PAD_H * 2 + (COLS_B - 1) * CELL;
+  const SVG_H = PAD_V * 2 + (ROWS_B - 1) * CELL + CELL;  // +CELL for top+bottom half-cells
+
+  // Origin: where blue(0,0) sits in SVG space
+  const OX = PAD_H;
+  const OY = PAD_V + HALF;  // shifted down by half cell to make room for red row 0
+
+  function bluePos(c, r) { return { x: OX + c * CELL, y: OY + r * CELL }; }
+  function redPos(c, r)  { return { x: OX + c * CELL + HALF, y: OY + r * CELL - HALF }; }
+
+  function mkEl(tag, attrs) {
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+
+  let onMoveCb = null;
+  let selectedDot = null;
+  let currentState = null;
+  let currentRole  = null;
+  let layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo;
+
+  function buildBoard(onMove) {
+    onMoveCb = onMove;
+    selectedDot = null;
+
+    const svg = document.getElementById('board-svg');
+    svg.innerHTML = '';
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+
+    layerBluGrid = mkEl('g', {});
+    layerRedGrid = mkEl('g', {});
+    layerEdges   = mkEl('g', {});
+    layerDots    = mkEl('g', {});
+    layerHalo    = mkEl('g', {});
+    svg.append(layerBluGrid, layerRedGrid, layerEdges, layerDots, layerHalo);
+
+    // Background grid hint lines — blue
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        if (c < COLS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c+1,r);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+        if (r < ROWS_B-1) {
+          const p1 = bluePos(c,r), p2 = bluePos(c,r+1);
+          layerBluGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#1a3adb','stroke-width':1.2}));
+        }
+      }
+    }
+
+    // Background grid hint lines — red
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        if (c < 3) {
+          const p1 = redPos(c,r), p2 = redPos(c+1,r);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+        if (r < 4) {
+          const p1 = redPos(c,r), p2 = redPos(c,r+1);
+          layerRedGrid.appendChild(mkEl('line', {x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#cc1111','stroke-width':1.2}));
+        }
+      }
+    }
+
+    // Blue dots
+    for (let r = 0; r < ROWS_B; r++) {
+      for (let c = 0; c < COLS_B; c++) {
+        const p = bluePos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#1a3adb','data-color':'blue','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    // Red dots
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 3; c++) {
+        const p = redPos(c,r);
+        const dot = mkEl('circle', {cx:p.x,cy:p.y,r:8,fill:'#cc1111','data-color':'red','data-c':c,'data-r':r,style:'cursor:pointer'});
+        dot.addEventListener('click', onDotClick);
+        layerDots.appendChild(dot);
+      }
+    }
+
+    svg.addEventListener('click', e => { if (e.target === svg) clearSel(); });
+  }
+
+  function onDotClick(e) {
+    e.stopPropagation();
+    if (!currentState || currentState.result !== 'playing') return;
+    const color = e.target.getAttribute('data-color');
+    const c = +e.target.getAttribute('data-c');
+    const r = +e.target.getAttribute('data-r');
+    const turn = currentState.turn;
+
+    // Must be your color and your turn
+    if (currentRole !== 'spectator' && color !== currentRole) return;
+    if (color !== turn) return;
+
+    if (!selectedDot) {
+      selectedDot = {color, c, r};
+      drawHalo(color, c, r);
+    } else {
+      if (selectedDot.color === color && selectedDot.c === c && selectedDot.r === r) {
+        clearSel(); return;
+      }
+      if (selectedDot.color !== color) {
+        clearSel();
+        if (color === turn && (currentRole === 'spectator' || color === currentRole)) {
+          selectedDot = {color, c, r}; drawHalo(color, c, r);
+        }
+        return;
+      }
+      // Only complete move if second dot is adjacent to first
+      const neighbors = color === 'blue'
+        ? engine.blueNeighbors(selectedDot.c, selectedDot.r)
+        : engine.redNeighbors(selectedDot.c, selectedDot.r);
+      const isAdjacent = neighbors.some(([nc,nr]) => nc === c && nr === r);
+      if (!isAdjacent) {
+        // Not a neighbor — reselect this dot instead
+        clearSel();
+        selectedDot = {color, c, r};
+        drawHalo(color, c, r);
+        return;
+      }
+      const key = engine.edgeKey(selectedDot.c, selectedDot.r, c, r);
+      clearSel();
+      onMoveCb(key);
+    }
+  }
+
+  function drawHalo(color, c, r) {
+    layerHalo.innerHTML = '';
+    const p = color === 'blue' ? bluePos(c,r) : redPos(c,r);
+    layerHalo.appendChild(mkEl('circle', {
+      cx:p.x, cy:p.y, r:16,
+      fill: color === 'blue' ? '#1a3adb' : '#cc1111',
+      opacity:'0.22'
+    }));
+  }
+
+  function clearSel() { selectedDot = null; layerHalo.innerHTML = ''; }
+
+  function renderBoard(state, role) {
+    if (!state) return;
+    currentState = state;
+    currentRole  = role;
+
+    // Show only active player's grid hint
+    layerBluGrid.setAttribute('opacity', state.turn === 'blue' ? '0.15' : '0');
+    layerRedGrid.setAttribute('opacity', state.turn === 'red'  ? '0.15' : '0');
+
+    layerEdges.innerHTML = '';
+    const bEdges = state.blueEdges || {};
+    const rEdges = state.redEdges  || {};
+
+    for (const key of Object.keys(bEdges)) drawEdge(key, 'blue');
+    for (const key of Object.keys(rEdges)) drawEdge(key, 'red');
+
+    if (role !== 'spectator' && state.turn !== role) clearSel();
+  }
+
+  function drawEdge(key, color) {
+    const parts = key.split('-');
+    if (parts.length !== 2) return;
+    const [c1,r1] = parts[0].split(',').map(Number);
+    const [c2,r2] = parts[1].split(',').map(Number);
+    if ([c1,r1,c2,r2].some(isNaN)) return;
+    const p1 = color === 'blue' ? bluePos(c1,r1) : redPos(c1,r1);
+    const p2 = color === 'blue' ? bluePos(c2,r2) : redPos(c2,r2);
+    layerEdges.appendChild(mkEl('line', {
+      x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y,
+      stroke: color === 'blue' ? '#1a3adb' : '#cc1111',
+      'stroke-width': 4.5, 'stroke-linecap': 'round'
+    }));
+  }
+
+  function renderStatus(state, role) {
+    const ind      = document.getElementById('turn-indicator');
+    const gs       = document.getElementById('game-status');
+    const btnAgain = document.getElementById('btn-again');
+    const cw = c => `<span class="color-${c}">${c.toUpperCase()}</span>`;
+
+    if (state.result === 'playing') {
+      btnAgain.classList.add('hidden');
+      gs.textContent = '';
+      const t = state.turn;
+      if (role === 'spectator')   ind.innerHTML = `${cw(t)}'s Turn`;
+      else if (t === role)        ind.innerHTML = `Your turn, playing ${cw(role)}`;
+      else                        ind.innerHTML = `Opponent's turn, playing ${cw(t)}`;
+    } else {
+      ind.innerHTML = '';
+      btnAgain.classList.remove('hidden');
+      const w = state.winner;
+      if (role === 'spectator')   gs.innerHTML = `${cw(w)} wins!`;
+      else if (w === role)        gs.innerHTML = `You win! ${cw(w)} connected!`;
+      else                        gs.innerHTML = `You lose. ${cw(w)} connected.`;
+    }
+  }
+
+  return { buildBoard, renderBoard, renderStatus };
+})();
+
+// ============================================================
+// SECTION 8 — SHELL STARTUP
+// ============================================================
+(function startup() {
+  const screenLobby = document.getElementById('screen-lobby');
+  const screenGame  = document.getElementById('screen-game');
+  function showLobby() { screenLobby.classList.remove('hidden'); screenGame.classList.add('hidden'); }
+  function showGame()  { screenLobby.classList.add('hidden'); screenGame.classList.remove('hidden'); }
+
+  let currentState = null, currentRole = 'blue', currentGameId = null, isLocal = false;
+
+  function normalizeState(state) {
+    if (!state) return state;
+    if (!state.blueEdges) state.blueEdges = {};
+    if (!state.redEdges)  state.redEdges  = {};
+    return state;
+  }
+
+  function handleMove(edgeKey) {
+    if (!currentState) return;
+    if (isLocal) {
+      const next = engine.applyMove(currentState, edgeKey, currentState.turn);
+      if (!next) return;
+      currentState = next;
+      ui.renderBoard(currentState, 'spectator');
+      ui.renderStatus(currentState, 'spectator');
+      return;
+    }
+    if (currentState.turn !== currentRole) return;
+    const next = engine.applyMove(currentState, edgeKey, currentRole);
+    if (!next) return;
+    next.playerBlue = currentState.playerBlue;
+    next.playerRed  = currentState.playerRed;
+    syncAdapter.push(currentGameId, next);
+  }
+
+  function startLocalGame() {
+    isLocal = true;
+    syncAdapter.unsubscribe();
+    currentGameId = null;
+    const gi = currentState ? (currentState.gameIndex || 0) + 1 : 0;
+    currentState = engine.initState(gi);
+    currentRole  = 'spectator';
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState, 'spectator');
+    ui.renderStatus(currentState, 'spectator');
+    showGame();
+  }
+
+  function startRemoteGame(gameId, state) {
+    isLocal       = false;
+    currentGameId = gameId;
+    currentState  = normalizeState(state);
+    currentRole   = identity.getRole(currentState);
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState, currentRole);
+    ui.renderStatus(currentState, currentRole);
+    showGame();
+    syncAdapter.onStateChange(gameId, remote => {
+      currentState = normalizeState(remote);
+      currentRole  = identity.getRole(currentState);
+      ui.renderBoard(currentState, currentRole);
+      ui.renderStatus(currentState, currentRole);
+    });
+  }
+
+  function createRemoteGame() {
+    if (!syncAdapter.ready) { alert("Firebase isn't configured.\n\nFill in Section 2, or use 'Play on This Device'."); return; }
+    const gameId = lobby.generateId();
+    const state  = engine.initState(0);
+    state.playerBlue = identity.id;
+    lobby.pushUrlState(gameId);
+    document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
+    document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
+    syncAdapter.push(gameId, state);
+    syncAdapter.onStateChange(gameId, remote => {
+      if (remote.playerRed && remote.blueEdges) {
+        document.getElementById('lobby-status').textContent = 'Friend joined!';
+        syncAdapter.unsubscribe();
+        startRemoteGame(gameId, remote);
+      }
+    });
+  }
+
+  function joinRemoteGame(gameId) {
+    if (!syncAdapter.ready) { alert("Firebase isn't configured."); showLobby(); return; }
+    showLobby();
+    document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
+    document.getElementById('lobby-status').textContent = 'Joining game…';
+    firebase.database().ref('circuitbreaker/' + gameId).once('value').then(snap => {
+      if (!snap.exists()) { document.getElementById('lobby-status').textContent = 'Game not found.'; return; }
+      const state = snap.val();
+      if (state.playerBlue === identity.id) { startRemoteGame(gameId, state); return; }
+      if (!state.playerRed) { state.playerRed = identity.id; syncAdapter.push(gameId, state); }
+      startRemoteGame(gameId, state);
+    }).catch(err => {
+      console.error('Join error:', err);
+      document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
+    });
+  }
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('share-url').textContent).then(() => {
+      const b = document.getElementById('copy-btn'); b.textContent = 'Copied!';
+      setTimeout(() => b.textContent = 'Copy', 1800);
+    });
+  });
+
+  document.getElementById('btn-again').addEventListener('click', () => {
+    if (isLocal) { startLocalGame(); return; }
+    const gi = (currentState.gameIndex || 0) + 1;
+    const fresh = engine.initState(gi);
+    fresh.playerBlue = currentState.playerBlue;
+    fresh.playerRed  = currentState.playerRed;
+    syncAdapter.push(currentGameId, fresh);
+  });
+
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    syncAdapter.unsubscribe(); isLocal = false;
+    const u = new URL(window.location.href); u.searchParams.delete('game');
+    window.history.replaceState({}, '', u.toString());
+    document.getElementById('link-panel').classList.remove('visible');
+    showLobby();
+  });
+
+  document.getElementById('btn-local').addEventListener('click', startLocalGame);
+  document.getElementById('btn-challenge').addEventListener('click', createRemoteGame);
+
+  const gid = lobby.getGameIdFromUrl();
+  if (gid) joinRemoteGame(gid); else showLobby();
+})();
+</script>
+</body>
+</html>

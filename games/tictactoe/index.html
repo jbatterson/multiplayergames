@@ -6,24 +6,6 @@
   <title>Tic-Tac-Toe</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
 
-  <!--
-  ============================================================
-  SETUP INSTRUCTIONS
-  ============================================================
-  1. Go to https://console.firebase.google.com
-  2. Click "Add project", give it a name, disable Analytics,
-     and click through to create.
-  3. In the left sidebar, click "Build" > "Realtime Database".
-  4. Click "Create Database", choose any region, and when
-     prompted for security rules choose "Start in test mode".
-  5. In the left sidebar, click the gear icon > "Project settings".
-  6. Scroll to "Your apps", click the </> (Web) icon, register
-     an app (any nickname), and copy the firebaseConfig object.
-  7. Paste your config values into the FIREBASE CONFIG section
-     below, replacing each placeholder string.
-  ============================================================
-  -->
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -142,6 +124,26 @@
       align-items: center;
     }
 
+    .player-badge {
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .player-badge-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: #FFD600;
+    }
+
     .turn-indicator {
       display: flex;
       flex-direction: column;
@@ -227,6 +229,7 @@
 
   <!-- GAME SCREEN -->
   <div id="screen-game" class="hidden">
+    <div class="player-badge" id="player-badge"></div>
     <div class="turn-indicator">
       <div class="turn-label" id="turn-label"></div>
       <div class="turn-symbol" id="turn-symbol"></div>
@@ -257,7 +260,7 @@ const CONFIG = {
 
 // ============================================================
 // SECTION 2 — FIREBASE CONFIG
-// Replace placeholder values with your own project's config.
+// Replace these values with your own project's config.
 // Found in: Firebase Console > Project Settings > Your Apps
 // ============================================================
 const FIREBASE_CONFIG = {
@@ -272,14 +275,14 @@ const FIREBASE_CONFIG = {
 
 // ============================================================
 // SECTION 3 — SYNC ADAPTER
-// All Firebase-specific code lives here.
+// All Firebase-specific code lives here behind a fixed interface.
 // To swap backends, replace only this section.
 //
 // Interface:
-//   syncAdapter.push(gameId, state)
-//   syncAdapter.onStateChange(gameId, cb)
-//   syncAdapter.unsubscribe()
-//   syncAdapter.ready  (boolean)
+//   syncAdapter.push(gameId, state)       — write full game state
+//   syncAdapter.onStateChange(gameId, cb) — subscribe to changes
+//   syncAdapter.unsubscribe()             — remove active listener
+//   syncAdapter.ready                     — boolean, false if unconfigured
 // ============================================================
 const syncAdapter = (() => {
   let db = null;
@@ -326,7 +329,10 @@ const syncAdapter = (() => {
 
 // ============================================================
 // SECTION 4 — PLAYER IDENTITY
-// Random player ID stored in localStorage.
+// A random player ID is generated once and stored in localStorage.
+// When a game is created, this ID is assigned to playerX.
+// When a game is joined via link, this ID is assigned to playerO.
+// A third visitor to the same link becomes a spectator.
 // ============================================================
 const identity = (() => {
   const KEY = 'ttt_player_id';
@@ -345,6 +351,8 @@ const identity = (() => {
 
 // ============================================================
 // SECTION 5 — LOBBY / URL LOGIC
+// Handles game ID generation, share URL construction, and
+// reading the game ID from the URL on page load.
 // ============================================================
 const lobby = (() => {
   function generateId() {
@@ -374,8 +382,16 @@ const lobby = (() => {
 })();
 
 // ============================================================
-// SECTION 6 — GAME ENGINE  ← cartridge
-// Pure functions. No DOM, no network.
+// SECTION 6 — GAME ENGINE  ← cartridge (swap for other games)
+// Pure functions only — no DOM, no network calls.
+//
+// Exports:
+//   engine.initState()                    — returns a fresh game state
+//   engine.applyMove(state, index, player) — returns new state or null if illegal
+//   engine.getStatus(state)               — { result, winner }
+//
+// NOTE: Empty cells use '_' instead of null because Firebase
+// strips null values from objects, which would destroy the board.
 // ============================================================
 const engine = (() => {
   const WIN_LINES = [
@@ -388,9 +404,9 @@ const engine = (() => {
     return {
       board:   {"0":"_","1":"_","2":"_","3":"_","4":"_","5":"_","6":"_","7":"_","8":"_"},
       turn:    'X',
-      result:  'playing',
-      winner:  null,
-      playerX: null,
+      result:  'playing',  // 'playing' | 'win' | 'draw'
+      winner:  null,       // null | 'X' | 'O'
+      playerX: null,       // player ID strings assigned at game creation
       playerO: null,
     };
   }
@@ -399,7 +415,6 @@ const engine = (() => {
     if (state.result !== 'playing') return null;
     if (state.turn !== player)      return null;
 
-    // Normalize board to array for processing
     const board = Array.isArray(state.board)
       ? state.board.slice()
       : Object.values(state.board);
@@ -408,17 +423,14 @@ const engine = (() => {
 
     board[index] = player;
 
-    // Check win
     for (const [a,b,c] of WIN_LINES) {
       if ((board[a] === 'X' || board[a] === 'O') && board[a] === board[b] && board[b] === board[c]) {
         return { ...state, board: {...board}, result: 'win', winner: player };
       }
     }
-    // Check draw
     if (board.every(sq => sq === 'X' || sq === 'O')) {
       return { ...state, board: {...board}, result: 'draw', winner: null };
     }
-    // Continue
     return { ...state, board: {...board}, turn: player === 'X' ? 'O' : 'X' };
   }
 
@@ -430,8 +442,9 @@ const engine = (() => {
 })();
 
 // ============================================================
-// SECTION 7 — UI  ← cartridge
-// Renders state to DOM. Fires onMove(index) on player input.
+// SECTION 7 — UI  ← cartridge (swap for other games)
+// Renders game state to DOM and wires up input.
+// Never calls Firebase directly — fires onMove(index) callback.
 // ============================================================
 const ui = (() => {
   function svgX() {
@@ -480,15 +493,16 @@ const ui = (() => {
   }
 
   function renderBoard(state) {
-    if (!state || !state.board) return;  // not ready yet
+    if (!state || !state.board) return;
 
     const board = Array.isArray(state.board)
       ? state.board
-      : Object.values(state.board);   // normalize Firebase object → array
+      : Object.values(state.board);
 
     const cells = document.querySelectorAll('.cell');
     cells.forEach((cell, i) => {
-      if (cell.children.length === 0 && board[i] && board[i] !== '_') {
+      cell.innerHTML = '';
+      if (board[i] === 'X' || board[i] === 'O') {
         cell.appendChild(markerFor(board[i]));
       }
     });
@@ -499,6 +513,17 @@ const ui = (() => {
     const turnSymbol = document.getElementById('turn-symbol');
     const gameStatus = document.getElementById('game-status');
     const btnAgain   = document.getElementById('btn-again');
+    const badge      = document.getElementById('player-badge');
+
+    // Player badge — show assigned symbol for the whole game
+    badge.innerHTML = '';
+    if (role !== 'spectator') {
+      badge.appendChild(document.createTextNode('You are\u00a0'));
+      const sym = document.createElement('span');
+      sym.classList.add('player-badge-symbol');
+      sym.appendChild(markerFor(role));
+      badge.appendChild(sym);
+    }
 
     turnSymbol.innerHTML = '';
 
@@ -535,7 +560,9 @@ const ui = (() => {
 
 // ============================================================
 // SECTION 8 — SHELL STARTUP
-// Wires everything together. Should not need changes between games.
+// Wires lobby, identity, sync adapter, game engine, and UI
+// together. This section should not need changes when swapping
+// the game cartridge (Sections 6 & 7).
 // ============================================================
 (function startup() {
   const screenLobby = document.getElementById('screen-lobby');
@@ -556,19 +583,17 @@ const ui = (() => {
   let currentGameId = null;
   let isLocal       = false;
 
-  // --- Normalize state from Firebase ---
-  // Firebase converts arrays to objects with numeric keys on retrieval.
-  // This ensures board is always a real JS array.
+  // Firebase stores arrays as objects with numeric string keys.
+  // This normalizes the board back to an array when needed.
   function normalizeState(state) {
-    if (!state) return state;
-    if (!state.board) return state;
+    if (!state || !state.board) return state;
     if (!Array.isArray(state.board)) {
       state.board = Object.values(state.board);
     }
     return state;
   }
 
-  // --- Handle a move ---
+  // --- Handle a move (called by UI on cell click) ---
   function handleMove(index) {
     if (!currentState) return;
 
@@ -577,13 +602,11 @@ const ui = (() => {
       if (!next) return;
       currentState = next;
       ui.renderBoard(currentState);
-      ui.renderStatus(currentState, currentState.turn === 'X' ? 'O' : 'X');
-      if (currentState.result !== 'playing') {
-        ui.renderStatus(currentState, 'spectator');
-      }
+      ui.renderStatus(currentState, 'spectator');
       return;
     }
 
+    // Remote: only move on your turn
     if (currentState.turn !== currentRole) return;
     const next = engine.applyMove(currentState, index, currentRole);
     if (!next) return;
@@ -592,25 +615,25 @@ const ui = (() => {
     syncAdapter.push(currentGameId, next);
   }
 
-  // --- Local game ---
+  // --- Start a local (same-device) game ---
   function startLocalGame() {
     isLocal = true;
     syncAdapter.unsubscribe();
     currentGameId = null;
     currentState  = engine.initState();
-    currentRole   = 'X';
+    currentRole   = 'spectator';
     ui.buildBoard(handleMove);
     ui.renderBoard(currentState);
     ui.renderStatus(currentState, 'spectator');
     showGame();
   }
 
-  // --- Remote game ---
+  // --- Start a remote game (used by both players) ---
   function startRemoteGame(gameId, state) {
-    isLocal        = false;
-    currentGameId  = gameId;
-    currentState   = normalizeState(state);
-    currentRole    = identity.getRole(currentState);
+    isLocal       = false;
+    currentGameId = gameId;
+    currentState  = normalizeState(state);
+    currentRole   = identity.getRole(currentState);
     ui.buildBoard(handleMove);
     ui.renderBoard(currentState);
     ui.renderStatus(currentState, currentRole);
@@ -624,10 +647,10 @@ const ui = (() => {
     });
   }
 
-  // --- Create remote game (Player 1) ---
+  // --- Player 1: create a new remote game and share the link ---
   function createRemoteGame() {
     if (!syncAdapter.ready) {
-      alert("Firebase isn't configured yet.\n\nFill in your Firebase config in Section 2, or use 'Play on This Device'.");
+      alert("Firebase isn't configured.\n\nFill in your Firebase config in Section 2, or use 'Play on This Device'.");
       return;
     }
     const gameId = lobby.generateId();
@@ -641,8 +664,8 @@ const ui = (() => {
 
     syncAdapter.push(gameId, state);
 
+    // Wait for Player 2 to claim the O slot and for a complete state
     syncAdapter.onStateChange(gameId, remoteState => {
-      console.log('Player 1 listener fired:', JSON.stringify(remoteState));
       if (remoteState.playerO && remoteState.board) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
@@ -651,10 +674,10 @@ const ui = (() => {
     });
   }
 
-  // --- Join remote game (Player 2) ---
+  // --- Player 2: join an existing remote game from a link ---
   function joinRemoteGame(gameId) {
     if (!syncAdapter.ready) {
-      alert("Firebase isn't configured yet.");
+      alert("Firebase isn't configured.");
       showLobby();
       return;
     }
@@ -664,21 +687,20 @@ const ui = (() => {
     document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
     document.getElementById('lobby-status').textContent = 'Joining game…';
 
-    const ref = firebase.database().ref('games/' + gameId);
-    ref.once('value').then(snap => {
+    firebase.database().ref('games/' + gameId).once('value').then(snap => {
       if (!snap.exists()) {
         document.getElementById('lobby-status').textContent = 'Game not found. The link may be expired.';
         return;
       }
       const state = snap.val();
-      console.log('Joined, state from Firebase:', JSON.stringify(state));
 
+      // If this player created the game, go straight in
       if (state.playerX === identity.id) {
-        // This player created the game — go straight in
         startRemoteGame(gameId, state);
         return;
       }
 
+      // Claim the O slot if still open
       if (!state.playerO) {
         state.playerO = identity.id;
         syncAdapter.push(gameId, state);
@@ -692,7 +714,7 @@ const ui = (() => {
     });
   }
 
-  // --- Buttons ---
+  // --- Copy link button ---
   document.getElementById('copy-btn').addEventListener('click', () => {
     const url = document.getElementById('share-url').textContent;
     navigator.clipboard.writeText(url).then(() => {
@@ -702,6 +724,7 @@ const ui = (() => {
     });
   });
 
+  // --- Play Again ---
   document.getElementById('btn-again').addEventListener('click', () => {
     if (isLocal) {
       startLocalGame();
@@ -713,6 +736,7 @@ const ui = (() => {
     }
   });
 
+  // --- Back to Menu ---
   document.getElementById('btn-menu').addEventListener('click', () => {
     syncAdapter.unsubscribe();
     isLocal = false;
@@ -727,6 +751,8 @@ const ui = (() => {
   document.getElementById('btn-challenge').addEventListener('click', createRemoteGame);
 
   // --- Entry point ---
+  // On load, check the URL for an existing game ID.
+  // If found, join that game. Otherwise show the lobby.
   const gameIdFromUrl = lobby.getGameIdFromUrl();
   if (gameIdFromUrl) {
     joinRemoteGame(gameIdFromUrl);
