@@ -323,10 +323,14 @@ const engine = (() => {
 
   function applyMove(state, cell, player) {
     if (state.result !== 'playing') return null;
-    if (state.board[cell]) return null;
+    // Normalize board in case Firebase returned it as an object
+    const boardArr = Array.isArray(state.board)
+      ? state.board
+      : Array.from({length: 19}, (_, i) => state.board[i] || null);
+    if (boardArr[cell]) return null;
     if (player && player !== 'spectator' && state.turn !== player) return null;
 
-    const board = state.board.map(c => c ? {...c} : null);
+    const board = boardArr.map(c => c ? {...c} : null);
     board[cell] = { number: state.round, color: state.turn, crossed: false };
 
     let turn = state.turn === 'blue' ? 'red' : 'blue';
