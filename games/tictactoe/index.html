@@ -410,7 +410,7 @@ const engine = (() => {
 
     // Check win
     for (const [a,b,c] of WIN_LINES) {
-      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+      if ((board[a] === 'X' || board[a] === 'O') && board[a] === board[b] && board[b] === board[c]) {
         return { ...state, board: {...board}, result: 'win', winner: player };
       }
     }
