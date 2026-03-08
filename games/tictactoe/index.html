@@ -472,6 +472,8 @@ const ui = (() => {
   }
 
   function renderBoard(state) {
+    if (!state || !state.board) return;  // not ready yet
+
     const board = Array.isArray(state.board)
       ? state.board
       : Object.values(state.board);   // normalize Firebase object → array
@@ -659,6 +661,7 @@ const ui = (() => {
         return;
       }
       const state = snap.val();
+      console.log('Joined, state from Firebase:', JSON.stringify(state));
 
       if (state.playerX === identity.id) {
         // This player created the game — go straight in
