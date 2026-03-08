@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multiplayer Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --muted: #555555;
+      --hairline: #e7e7e7;
+      --radius: 10px;
+      --maxw: 720px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hp-page {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    .hp-top {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .hp-h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .hp-tagline {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--muted);
+      max-width: 480px;
+    }
+
+    .hp-divider {
+      height: 2px;
+      background: var(--text);
+      margin: 18px 0;
+    }
+
+    .hp-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    a.hp-card {
+      display: flex;
+      gap: 16px;
+      text-decoration: none;
+      color: inherit;
+      padding: 12px;
+      border-radius: var(--radius);
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    a.hp-card:hover {
+      background: rgba(0,0,0,0.02);
+      transform: translateY(-1px);
+    }
+
+    a.hp-card:active { transform: translateY(0); }
+
+    a.hp-card:focus-visible {
+      outline: 3px solid rgba(0,0,0,0.2);
+      outline-offset: 3px;
+    }
+
+    .hp-iconTile {
+      width: 96px;
+      height: 96px;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: #f4f4f4;
+    }
+
+    .hp-meta {
+      min-width: 0;
+      padding-top: 4px;
+    }
+
+    .hp-cardTitle {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .hp-desc {
+      font-size: 14px;
+      line-height: 1.35;
+      color: var(--muted);
+      max-width: 52ch;
+    }
+
+    @media (max-width: 420px) {
+      .hp-iconTile { width: 84px; height: 84px; }
+      .hp-h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+<main class="hp-page">
+
+  <header class="hp-top">
+    <h1 class="hp-h1">Multiplayer Games</h1>
+    <p class="hp-tagline">Two-player strategy games. Share a link and play from anywhere.</p>
+  </header>
+
+  <div class="hp-divider"></div>
+
+  <section class="hp-list">
+
+    <!-- Tic-Tac-Toe -->
+    <a class="hp-card" href="./games/tictactoe/">
+      <div class="hp-iconTile">
+        <svg viewBox="0 0 96 96" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid lines -->
+          <line x1="32" y1="4"  x2="32" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+          <line x1="64" y1="4"  x2="64" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+          <line x1="4"  y1="32" x2="92" y2="32" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+          <line x1="4"  y1="64" x2="92" y2="64" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+          <!-- X in top-left -->
+          <line x1="10" y1="10" x2="26" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="26" y1="10" x2="10" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- O in top-center -->
+          <circle cx="48" cy="18" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+          <!-- X in middle-center -->
+          <line x1="40" y1="40" x2="56" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="56" y1="40" x2="40" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- O in bottom-right -->
+          <circle cx="80" cy="80" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+          <!-- O in middle-left -->
+          <circle cx="16" cy="48" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
+          <!-- X in bottom-left -->
+          <line x1="10" y1="70" x2="26" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="26" y1="70" x2="10" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="hp-meta">
+        <div class="hp-cardTitle">Tic-Tac-Toe</div>
+        <div class="hp-desc">The classic. Take turns placing X and O. First to three in a row wins.</div>
+      </div>
+    </a>
+
+    <!-- Circuit Breaker -->
+    <a class="hp-card" href="./games/circuitbreaker/">
+      <div class="hp-iconTile">
+        <svg viewBox="0 0 144.45561 145.50085" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <circle fill="#3b82f6" cx="58.45016" cy="58.45021" r="13.80488"/>
+          <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="108.45016" y1="9.4954"   x2="108.45016" y2="145.50085"/>
+          <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016"   y1="108.45021" x2="144.45561" y2="108.45021"/>
+          <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016"   y1="58.45021"  x2="144.45561" y2="58.45021"/>
+          <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="58.45016"  y1="9.4954"    x2="58.45016"  y2="145.50085"/>
+          <line stroke="#3b82f6" fill="none" stroke-miterlimit="10" x1="8.45016"   y1="8.45021"   x2="144.45561" y2="8.45021"/>
+          <circle fill="#25408f" cx="58.45016"  cy="8.45021"   r="8.45019"/>
+          <circle fill="#25408f" cx="58.45016"  cy="58.45021"  r="8.45019"/>
+          <circle fill="#25408f" cx="58.45016"  cy="108.45021" r="8.45019"/>
+          <circle fill="#25408f" cx="108.45016" cy="108.45021" r="8.45019"/>
+          <circle fill="#d2232a" cx="33.45016"  cy="33.45021"  r="8.45019"/>
+          <circle fill="#d2232a" cx="83.45016"  cy="33.45021"  r="8.45019"/>
+          <circle fill="#d2232a" cx="133.45016" cy="33.45021"  r="8.45019"/>
+          <circle fill="#d2232a" cx="33.45016"  cy="83.45021"  r="8.45019"/>
+          <circle fill="#d2232a" cx="33.45016"  cy="133.45021" r="8.45019"/>
+          <circle fill="#d2232a" cx="83.45016"  cy="133.45021" r="8.45019"/>
+          <circle fill="#d2232a" cx="133.45016" cy="133.45021" r="8.45019"/>
+          <line stroke="#25408f" fill="none" stroke-miterlimit="10" x1="8.45016" y1="9.4954" x2="8.45016" y2="145.50085"/>
+          <path fill="#25408f" d="M16.90033,58.4502c0-3.76349-2.46185-6.9491-5.86182-8.04266V16.49286c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266C16.90033,3.78326,13.11707,0,8.45013,0S0,3.78326,0,8.4502c0,3.76349,2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v33.91467c-3.39996,1.09357-5.86182,4.27917-5.86182,8.04266s2.46185,6.9491,5.86182,8.04266v29.008h5.1767v-29.008c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266s-2.46185-6.9491-5.86182-8.04266v-33.91467c3.39996-1.09357,5.86182-4.27917,5.86182-8.04266Z"/>
+          <path fill="#d2232a" d="M133.45013,75c-3.76343,0-6.94904,2.46185-8.0426,5.86182h-33.91473c-1.09357-3.39996-4.27917-5.86182-8.04266-5.86182-4.66687,0-8.45013,3.78326-8.45013,8.4502s3.78326,8.4502,8.45013,8.4502c3.76349,0,6.9491-2.46191,8.04266-5.86188h33.91473c1.09351,3.39996,4.27911,5.86188,8.0426,5.86188,4.66687,0,8.4502-3.78326,8.4502-8.4502s-3.78333-8.4502-8.4502-8.4502Z"/>
+          <path fill="#25408f" d="M110.84326,50.34912V16.55127c3.50043-1.03271,6.05707-4.26605,6.05707-8.10107,0-4.66693-3.78326-8.4502-8.4502-8.4502s-8.45013,3.78326-8.45013,8.4502c0,3.69019,2.36932,6.81946,5.66656,7.97119v34.05762c-3.29724,1.15173-5.66656,4.28101-5.66656,7.97119,0,4.66693,3.78326,8.4502,8.45013,8.4502s8.4502-3.78326,8.4502-8.4502c0-3.83502-2.55664-7.06836-6.05707-8.10107Z"/>
+        </svg>
+      </div>
+      <div class="hp-meta">
+        <div class="hp-cardTitle">Circuit Breaker</div>
+        <div class="hp-desc">Connect your circuit boards before your opponent connects theirs. Lines can't cross.</div>
+      </div>
+    </a>
+
+  </section>
+</main>
+</body>
+</html>
