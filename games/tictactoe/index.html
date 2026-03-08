@@ -553,7 +553,8 @@ const ui = (() => {
   // This ensures board is always a real JS array.
   function normalizeState(state) {
     if (!state) return state;
-    if (state.board && !Array.isArray(state.board)) {
+    if (!state.board) return state;
+    if (!Array.isArray(state.board)) {
       state.board = Object.values(state.board);
     }
     return state;
@@ -633,7 +634,7 @@ const ui = (() => {
     syncAdapter.push(gameId, state);
 
     syncAdapter.onStateChange(gameId, remoteState => {
-      if (remoteState.playerO) {
+      if (remoteState.playerO && remoteState.board) {
         document.getElementById('lobby-status').textContent = 'Friend joined!';
         syncAdapter.unsubscribe();
         startRemoteGame(gameId, remoteState);
