@@ -662,6 +662,7 @@ const ui = (() => {
     ui.buildBoard(handleMove);
     ui.renderBoard(currentState, currentRole);
     ui.renderStatus(currentState, currentRole);
+    console.log('startRemoteGame — myId:', identity.id, 'playerBlue:', currentState.playerBlue, 'playerRed:', currentState.playerRed, 'role:', currentRole);
     showGame();
     syncAdapter.onStateChange(gameId, remote => {
       currentState = normalizeState(remote);
