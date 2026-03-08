@@ -141,24 +141,17 @@
     <a class="hp-card" href="./games/tictactoe/">
       <div class="hp-iconTile">
         <svg viewBox="0 0 96 96" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
-          <!-- Grid lines -->
           <line x1="32" y1="4"  x2="32" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
           <line x1="64" y1="4"  x2="64" y2="92" stroke="#000" stroke-width="3" stroke-linecap="round"/>
           <line x1="4"  y1="32" x2="92" y2="32" stroke="#000" stroke-width="3" stroke-linecap="round"/>
           <line x1="4"  y1="64" x2="92" y2="64" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-          <!-- X in top-left -->
           <line x1="10" y1="10" x2="26" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
           <line x1="26" y1="10" x2="10" y2="26" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-          <!-- O in top-center -->
           <circle cx="48" cy="18" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-          <!-- X in middle-center -->
           <line x1="40" y1="40" x2="56" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
           <line x1="56" y1="40" x2="40" y2="56" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-          <!-- O in bottom-right -->
           <circle cx="80" cy="80" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-          <!-- O in middle-left -->
           <circle cx="16" cy="48" r="9" fill="none" stroke="#000" stroke-width="3.5"/>
-          <!-- X in bottom-left -->
           <line x1="10" y1="70" x2="26" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
           <line x1="26" y1="70" x2="10" y2="86" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
         </svg>
@@ -199,6 +192,32 @@
       <div class="hp-meta">
         <div class="hp-cardTitle">Circuit Breaker</div>
         <div class="hp-desc">Connect your circuit boards before your opponent connects theirs. Lines can't cross.</div>
+      </div>
+    </a>
+
+    <!-- Troll Hole -->
+    <a class="hp-card" href="./games/trollhole/">
+      <div class="hp-iconTile">
+        <svg viewBox="0 0 96 96" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hex grid: 3 rows of circles suggesting the board -->
+          <circle cx="48" cy="12" r="10" fill="#eee"/>
+          <circle cx="28" cy="42" r="10" fill="#1a3adb"/>
+          <circle cx="48" cy="42" r="10" fill="#eee"/>
+          <circle cx="68" cy="42" r="10" fill="#cc1111"/>
+          <circle cx="28" cy="72" r="10" fill="#eee"/>
+          <!-- Troll hole (green) -->
+          <circle cx="48" cy="72" r="10" fill="#3aa655"/>
+          <circle cx="68" cy="72" r="10" fill="#eee"/>
+          <!-- Troll eyes -->
+          <circle cx="44" cy="69" r="2.5" fill="#000"/>
+          <circle cx="52" cy="69" r="2.5" fill="#000"/>
+          <!-- Troll smile -->
+          <path d="M43,75 Q48,79 53,75" stroke="#000" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="hp-meta">
+        <div class="hp-cardTitle">Troll Hole</div>
+        <div class="hp-desc">Place numbers 1–9 on a hex board. The Troll eats the empty hole and its neighbors. Highest score wins.</div>
       </div>
     </a>
 
