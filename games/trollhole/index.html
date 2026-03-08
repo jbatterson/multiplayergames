@@ -323,12 +323,15 @@ const engine = (() => {
 
   function applyMove(state, cell, player) {
     if (state.result !== 'playing') return null;
-    // Normalize board in case Firebase returned it as an object
-    const boardArr = Array.isArray(state.board)
-      ? state.board
-      : Array.from({length: 19}, (_, i) => state.board[i] || null);
-    if (boardArr[cell]) return null;
     if (player && player !== 'spectator' && state.turn !== player) return null;
+
+    // Firebase strips all-null arrays entirely — always rebuild safely
+    const raw = state.board;
+    const boardArr = Array.from({length: 19}, (_, i) =>
+      (raw && raw[i] && typeof raw[i] === 'object') ? raw[i] : null
+    );
+
+    if (boardArr[cell]) return null;
 
     const board = boardArr.map(c => c ? {...c} : null);
     board[cell] = { number: state.round, color: state.turn, crossed: false };
