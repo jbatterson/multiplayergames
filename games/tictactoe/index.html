@@ -386,7 +386,7 @@ const engine = (() => {
 
   function initState() {
     return {
-      board:   {"0":null,"1":null,"2":null,"3":null,"4":null,"5":null,"6":null,"7":null,"8":null},
+      board:   {"0":"_","1":"_","2":"_","3":"_","4":"_","5":"_","6":"_","7":"_","8":"_"},
       turn:    'X',
       result:  'playing',
       winner:  null,
@@ -404,7 +404,7 @@ const engine = (() => {
       ? state.board.slice()
       : Object.values(state.board);
 
-    if (board[index] !== null) return null;
+    if (board[index] === 'X' || board[index] === 'O') return null;
 
     board[index] = player;
 
@@ -415,7 +415,7 @@ const engine = (() => {
       }
     }
     // Check draw
-    if (board.every(sq => sq !== null)) {
+    if (board.every(sq => sq === 'X' || sq === 'O')) {
       return { ...state, board: {...board}, result: 'draw', winner: null };
     }
     // Continue
@@ -488,7 +488,7 @@ const ui = (() => {
 
     const cells = document.querySelectorAll('.cell');
     cells.forEach((cell, i) => {
-      if (cell.children.length === 0 && board[i]) {
+      if (cell.children.length === 0 && board[i] && board[i] !== '_') {
         cell.appendChild(markerFor(board[i]));
       }
     });
