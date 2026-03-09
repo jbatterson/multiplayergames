@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Troll Hole</title>
+  <title>Hexagon vs Triangle</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
   <style>
     .header-row {
@@ -152,7 +152,7 @@
         </svg>
       </a>
     </div>
-    <h1 class="title">Troll Hole</h1>
+    <h1 class="title">HEX V TRI</h1>
     <div class="header-side"></div>
   </div>
 
@@ -331,9 +331,9 @@ const engine = (() => {
     6:[{over:3,land:1},{over:7,land:8}],
     7:[{over:6,land:5},{over:3,land:0}],
     8:[{over:7,land:6},{over:4,land:1}],
-    9:[{over:6,land:3}],
-    10:[{over:6,land:2},{over:7,land:4}],
-    11:[{over:7,land:3}]
+    9:[{over:6,land:3},{over:10,land:11}],
+    10:[{over:11,land:11},{over:7,land:4},{over:6,land:2}],
+    11:[{over:10,land:9},{over:7,land:3}]
   };
 
   function initState(gameIndex){
@@ -431,15 +431,15 @@ const engine = (() => {
 
   // win sets (0‑indexed)
   const TRI_WINS = [
-    [0,2,3,5,6,7],   // 1-3-4-6-7-8
-    [1,3,4,6,7,8],   // 2-4-5-7-8-9
-    [3,6,7,9,10,11]  // 4-7-8-10-11-12
+    [0,3,7,6,5,2],   // 1-4-8-7-6-3
+    [1,4,8,7,6,3],   // 2-5-9-8-7-4
+    [3,7,11,10,9,6]  // 4-8-12-11-10-7
   ];
 
   const HEX_WINS = [
-    [0,1,2,4,6,7],   // 1-2-3-5-7-8
-    [2,3,5,7,9,10],  // 3-4-6-8-10-11
-    [3,4,6,8,10,11]  // 4-5-7-9-11-12
+    [0,1,4,7,6,2],   // 1-2-5-8-7-3
+    [2,3,7,10,9,5],  // 3-4-8-11-10-6
+    [3,4,8,11,10,6]  // 4-5-9-12-11-7
   ];
 
   function checkWin(board, type){
@@ -508,6 +508,7 @@ const ui = (()=>{
     dotNodes=[];
     prevBoard=null;
     activeAnimationToken=null;
+    winShape=null;
 
     svg.addEventListener('click', (e) => {
       if(e.target === svg) clickHandler(null);
@@ -682,36 +683,40 @@ const ui = (()=>{
 
     const svg=document.getElementById('board-svg');
 
-    const poly=document.createElementNS(SVG_NS,'polygon');
+    const path=document.createElementNS(SVG_NS,'path');
 
-    const pts=set.map(i=>{
-      const [x,y]=POSITIONS[i];
-      return x+','+y;
-    }).join(' ');
+    const pts=set.map(i=>POSITIONS[i]);
 
-    poly.setAttribute('points',pts);
-    poly.setAttribute('fill','none');
-    poly.setAttribute('stroke','#16a34a');
-    poly.setAttribute('stroke-width','6');
-    poly.setAttribute('stroke-linejoin','round');
+    let d=`M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=1;i<pts.length;i++){
+      d+=` L ${pts[i][0]} ${pts[i][1]}`;
+    }
+    d+=` L ${pts[0][0]} ${pts[0][1]}`;
 
-    svg.appendChild(poly);
+    path.setAttribute('d',d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke','#cc1111');
+    path.setAttribute('stroke-width','6');
+    path.setAttribute('stroke-linejoin','round');
 
-    const length=poly.getTotalLength();
+    svg.appendChild(path);
 
-    poly.style.strokeDasharray=length;
-    poly.style.strokeDashoffset=length;
-    poly.getBoundingClientRect();
+    const length=path.getTotalLength();
 
-    poly.style.transition='stroke-dashoffset 0.35s ease-out';
-    poly.style.strokeDashoffset='0';
+    path.style.strokeDasharray=length;
+    path.style.strokeDashoffset=length;
+    path.getBoundingClientRect();
 
-    winShape=poly;
+    path.style.transition='stroke-dashoffset 0.4s ease-out';
+    path.style.strokeDashoffset='0';
+
+    winShape=path;
   }
 
   function clearAnimations(){
     prevBoard=null;
     activeAnimationToken=null;
+    if(winShape){ winShape.remove(); winShape=null; }
   }
 
   return {buildBoard,renderBoard,renderStatus,clearAnimations};
