@@ -169,10 +169,11 @@
     </svg>
 
     <p class="instructions">
-      Take turns placing numbers 1–9 on the hex board.
-      <span class="c-blue">Blue</span> and <span class="c-red">Red</span> each place one per round.
-      After round 9, the Troll eats the empty hole and all its neighbors.
-      Highest score wins!
+      Move the blue tokens around the board.
+      <span class="c-blue">Hexagon</span> tries to form a hexagon shape,
+      while <span class="c-red">Triangle</span> tries to form a triangle.
+      Tokens may slide to an adjacent empty circle or hop over another token.
+      First player to complete their shape wins.
     </p>
 
     <button class="btn" id="btn-local">Play on This Device</button>
@@ -420,7 +421,8 @@ const engine = (() => {
   const TRI_WINS = [
     [0,3,7,6,5,2],   // 1-4-8-7-6-3
     [1,4,8,7,6,3],   // 2-5-9-8-7-4
-    [3,7,11,10,9,6]  // 4-8-12-11-10-7
+    [3,7,11,10,9,6], // 4-8-12-11-10-7
+    [2,3,4,7,10,6]   // 3-4-5-8-11-7
   ];
 
   const HEX_WINS = [
