@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Troll Hole</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet" />
+  <style>
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .header-side {
+      width: 32px;
+      display: flex;
+      align-items: center;
+    }
+    .home-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .home-btn:hover { opacity: 0.5; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #fff;
+      color: #000;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 28px 16px 40px;
+    }
+    .game-container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-weight: 900;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin: 0;
+      text-align: center;
+    }
+    .btn {
+      width: 100%;
+      padding: 1rem 0;
+      border: 2px solid #000;
+      background: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+    }
+    .btn:hover:not(:disabled) { background: #000; color: #fff; }
+    .btn:disabled { opacity: 0.2; cursor: not-allowed; }
+    .btn-primary {
+      background: #000; color: #fff;
+      font-weight: 900; font-size: 0.8rem; letter-spacing: 0.12em;
+    }
+    .btn-primary:hover:not(:disabled) { background: #333; }
+    #screen-lobby {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .lobby-divider {
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: #999; margin: 0.25rem 0;
+    }
+    #link-panel {
+      width: 100%; border: 2px solid #000;
+      padding: 1rem; display: none;
+      flex-direction: column; gap: 0.75rem;
+    }
+    #link-panel.visible { display: flex; }
+    .link-box { display: flex; gap: 0.5rem; align-items: stretch; }
+    #share-url {
+      flex: 1; border: 2px solid #000;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem; color: #000; background: #f9f9f9;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #copy-btn { width: auto; padding: 0 1rem; flex-shrink: 0; font-size: 0.65rem; }
+    .link-instructions { font-size: 0.7rem; font-weight: 600; text-align: center; color: #444; }
+    .status-line {
+      font-size: 0.65rem; font-weight: 900;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      text-align: center; min-height: 1em;
+    }
+    #screen-game {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .turn-indicator {
+      margin-bottom: 0.75rem;
+      font-size: 0.7rem; font-weight: 900;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      text-align: center; min-height: 1.4em;
+    }
+    .turn-indicator .color-blue { color: #1a3adb; }
+    .turn-indicator .color-red  { color: #cc1111; }
+    #board-svg {
+      width: 100%; max-width: 400px;
+      display: block; margin-bottom: 1.25rem;
+    }
+    .game-controls {
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .instructions {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 300px;
+      margin-bottom: 1.5rem;
+      color: #222;
+    }
+    .c-blue { color: #1a3adb; font-weight: 700; }
+    .c-red  { color: #cc1111; font-weight: 700; }
+    .circle-fade { opacity: 0.35; transition: opacity 0.35s; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <div class="header-row">
+    <div class="header-side">
+      <a class="home-btn" href="../../" aria-label="Home">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true">
+          <path d="M4 11L2.5 11L12 3L21.5 11L20 11L20 21Q20 22 19 22L5 22Q4 22 4 21ZM10 15L14 15Q15 15 15 16L15 22L9 22L9 16Q9 15 10 15Z"/>
+        </svg>
+      </a>
+    </div>
+    <h1 class="title">Troll Hole</h1>
+    <div class="header-side"></div>
+  </div>
+
+  <div id="screen-lobby">
+    <!-- Lobby icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150.22 145.19" style="width:140px;height:auto;margin-bottom:1.25rem;">
+      <defs><style>.th-1{fill:#010101}.th-2{fill:#1e3a8a}.th-3{fill:#fff}.th-4{fill:#3aa655}.th-5{fill:#dc2626}</style></defs>
+      <circle class="th-4" cx="110.25" cy="113" r="32.18"/>
+      <path class="th-5" d="M40.25,80.82c-17.77,0-32.18,14.41-32.18,32.18s14.41,32.18,32.18,32.18,32.18-14.41,32.18-32.18-14.41-32.18-32.18-32.18ZM49.65,127.13h-18.27v-2.55l9.65-10.72c1.43-1.62,2.42-2.94,2.96-3.95s.81-2.06.81-3.15c0-1.46-.44-2.65-1.32-3.58-.88-.93-2.06-1.4-3.52-1.4-1.76,0-3.13.5-4.11,1.5-.98,1-1.46,2.4-1.46,4.18h-3.54c0-2.57.83-4.64,2.48-6.22,1.65-1.58,3.86-2.37,6.63-2.37,2.59,0,4.64.68,6.15,2.04,1.51,1.36,2.26,3.17,2.26,5.43,0,2.74-1.75,6.01-5.25,9.8l-7.47,8.1h14v2.89Z"/>
+      <polygon class="th-5" points="139.21 56.96 147.88 56.96 147.88 43.29 147.46 44.05 139.21 56.96"/>
+      <path class="th-2" d="M91.34,24.51c-15.39-8.89-35.07-3.61-43.96,11.78-8.89,15.39-3.61,35.07,11.78,43.96,15.39,8.89,35.07,3.61,43.96-11.78,8.89-15.39,3.61-35.07-11.78-43.96ZM81.68,64.03c-1.55,1.65-3.72,2.48-6.5,2.48-2.46,0-4.47-.68-6.03-2.05s-2.44-3.25-2.66-5.67h3.35c.22,1.6.79,2.8,1.7,3.61.92.81,2.13,1.22,3.64,1.22,1.65,0,2.94-.56,3.88-1.68.94-1.12,1.41-2.67,1.41-4.65,0-1.86-.51-3.36-1.52-4.49-1.01-1.13-2.36-1.69-4.05-1.69-1.54,0-2.76.34-3.64,1.01l-.94.77-2.83-.73,1.42-13.9h14.28v3.27h-11.28l-.84,7.6c1.37-.8,2.92-1.21,4.65-1.21,2.54,0,4.56.84,6.05,2.52,1.49,1.68,2.24,3.95,2.24,6.81s-.78,5.13-2.33,6.79Z"/>
+      <path class="th-5" d="M5.48,50.8c-1.21,0-2.33.36-3.35,1.09-1.02.73-1.73,1.64-2.13,2.74v1.3c0,2.3.52,4.15,1.55,5.55s2.32,2.11,3.87,2.11,2.85-.59,3.76-1.76c.91-1.17,1.37-2.71,1.37-4.61s-.46-3.46-1.39-4.64c-.93-1.18-2.15-1.77-3.69-1.77Z"/>
+      <path class="th-1" d="M109.72,123.22c-8.84,0-16.89-2.47-22.93-6.53,2.29,11.24,11.89,19.68,23.39,19.68s21.52-8.81,23.52-20.42c-6.14,4.49-14.62,7.27-23.98,7.27Z"/>
+      <path class="th-1" d="M109.48,110.33c-6.48,0-11.89-4.32-13.21-10.08,0,.1,0,.2,0,.3,0,7.08,5.92,12.81,13.22,12.81s13.22-5.74,13.22-12.81c0-.1,0-.2,0-.3-1.32,5.76-6.73,10.08-13.21,10.08Z"/>
+      <circle class="th-1" cx="108.86" cy="98.23" r="8.59"/>
+      <path class="th-3" d="M97.25,130.75c2.68,2.52,7.5,4.19,13,4.19,5.78,0,10.81-1.85,13.4-4.59-2.68-2.52-7.5-4.19-13-4.19-5.78,0-10.81,1.85-13.4,4.59Z"/>
+      <ellipse class="th-3" cx="104.78" cy="95.79" rx="3.15" ry="2.63" transform="translate(-28.04 145.94) rotate(-63.12)"/>
+      <path class="th-3" d="M123.02,122.06s1.09,2.51.95,3.76,1.5.69,1.91.4,1.73-3.28.85-5.15l-3.71.99Z"/>
+      <path class="th-3" d="M96.68,122.51s-1.12,2.76-1.04,4.15-1.42.74-1.79.42-1.48-3.65-.58-5.72l3.41,1.15Z"/>
+      <path class="th-5" d="M21.34,24.51c-6.65-3.84-14.09-5.03-21.12-3.91v21.27c2.17-2.35,5.26-3.56,9.28-3.62h.63v3.01h-.65c-2.76.05-4.95.87-6.59,2.45-1.4,1.35-2.29,3.18-2.68,5.48v1.04c1.45-1.57,3.4-2.36,5.85-2.36s4.36.86,5.81,2.57c1.45,1.71,2.17,3.92,2.17,6.62,0,2.87-.78,5.17-2.35,6.89-1.56,1.72-3.66,2.58-6.29,2.58-2.03,0-3.76-.59-5.2-1.77v19.42c12.77,2.02,26.05-3.83,32.9-15.7,8.89-15.39,3.61-35.07-11.78-43.96Z"/>
+      <g>
+        <path class="th-2" d="M48.86,0c-.34,1.55-1.08,2.85-2.23,3.88-1.63,1.47-3.76,2.2-6.38,2.2s-4.75-.71-6.39-2.13c-1.23-1.06-2-2.38-2.31-3.96H9.13c3.64,13.78,16.19,23.94,31.11,23.94S67.72,13.78,71.36,0h-22.5Z"/>
+        <path class="th-2" d="M40.26,3.19c1.71,0,3.02-.45,3.93-1.34.5-.49.85-1.12,1.07-1.85h-10.02c.23.72.61,1.35,1.17,1.87.96.88,2.24,1.32,3.85,1.32Z"/>
+      </g>
+      <path class="th-2" d="M110.66,0l-2.54,5.7h-3.71l2.63-5.7h-27.9c3.64,13.78,16.19,23.94,31.11,23.94s27.47-10.16,31.11-23.94h-30.7Z"/>
+      <path class="th-5" d="M150.22,66.32h-2.34v-6.47h-12.69v-2.09l12.48-19.32h2.55v-17.86c-12.76-1.99-26,3.85-32.84,15.7-8.89,15.39-3.61,35.07,11.78,43.96,6.63,3.83,14.05,5.02,21.06,3.92v-17.85Z"/>
+    </svg>
+
+    <p class="instructions">
+      Take turns placing numbers 1–9 on the hex board.
+      <span class="c-blue">Blue</span> and <span class="c-red">Red</span> each place one per round.
+      After round 9, the Troll eats the empty hole and all its neighbors.
+      Highest score wins!
+    </p>
+
+    <button class="btn" id="btn-local">Play on This Device</button>
+    <div class="lobby-divider">or</div>
+    <button class="btn" id="btn-challenge">Challenge a Friend</button>
+    <div id="link-panel">
+      <p class="link-instructions">Send this link to a friend. The game starts when they open it.</p>
+      <div class="link-box">
+        <div id="share-url"></div>
+        <button class="btn" id="copy-btn">Copy</button>
+      </div>
+      <div class="status-line" id="lobby-status"></div>
+    </div>
+  </div>
+
+  <div id="screen-game" class="hidden">
+    <div class="turn-indicator" id="turn-indicator"></div>
+    <svg id="board-svg" viewBox="0 0 420 380"></svg>
+    <div class="game-controls">
+      <div class="status-line" id="game-status"></div>
+      <button class="btn btn-primary hidden" id="btn-again">Play Again</button>
+      <button class="btn" id="btn-menu">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+"use strict";
+
+// ============================================================
+// SECTION 1 — CONFIG / CONSTANTS
+// ============================================================
+const CONFIG = {
+  gameIdLength: 4,
+  gameIdChars: 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+};
+
+// ============================================================
+// SECTION 2 — FIREBASE CONFIG
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyDrnan5rxxGwcCpS3tnB68OSTG6toQOL6A",
+  authDomain:        "multiplayer-tic-tac-toe-1611a.firebaseapp.com",
+  databaseURL:       "https://multiplayer-tic-tac-toe-1611a-default-rtdb.firebaseio.com",
+  projectId:         "multiplayer-tic-tac-toe-1611a",
+  storageBucket:     "multiplayer-tic-tac-toe-1611a.firebasestorage.app",
+  messagingSenderId: "896542207536",
+  appId:             "1:896542207536:web:6dd25e3b8950dc65ec47f5",
+};
+
+// ============================================================
+// SECTION 3 — SYNC ADAPTER
+// ============================================================
+const syncAdapter = (() => {
+  let db = null, activeRef = null, activeHandler = null;
+  function init() {
+    if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") return false;
+    try { firebase.initializeApp(FIREBASE_CONFIG); db = firebase.database(); return true; }
+    catch(e) { console.error("Firebase init failed:", e); return false; }
+  }
+  function push(gameId, state) { if (db) db.ref('trollhole/' + gameId).set(state); }
+  function onStateChange(gameId, cb) {
+    unsubscribe();
+    if (!db) return;
+    activeRef = db.ref('trollhole/' + gameId);
+    activeHandler = activeRef.on('value', snap => { if (snap.exists()) cb(snap.val()); });
+  }
+  function unsubscribe() {
+    if (activeRef && activeHandler) activeRef.off('value', activeHandler);
+    activeRef = null; activeHandler = null;
+  }
+  const ready = init();
+  return { push, onStateChange, unsubscribe, ready };
+})();
+
+// ============================================================
+// SECTION 4 — PLAYER IDENTITY
+// ============================================================
+const identity = (() => {
+  const KEY = 'cb_player_id';
+  let id = localStorage.getItem(KEY);
+  if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem(KEY, id); }
+  function getRole(state) {
+    if (state.playerBlue === id) return 'blue';
+    if (state.playerRed  === id) return 'red';
+    return 'spectator';
+  }
+  return { id, getRole };
+})();
+
+// ============================================================
+// SECTION 5 — LOBBY / URL LOGIC
+// ============================================================
+const lobby = (() => {
+  function generateId() {
+    let id = '';
+    for (let i = 0; i < CONFIG.gameIdLength; i++)
+      id += CONFIG.gameIdChars[Math.floor(Math.random() * CONFIG.gameIdChars.length)];
+    return id;
+  }
+  function getGameIdFromUrl() { return new URLSearchParams(window.location.search).get('game'); }
+  function buildShareUrl(gameId) {
+    const u = new URL(window.location.href); u.search = ''; u.searchParams.set('game', gameId); return u.toString();
+  }
+  function pushUrlState(gameId) { window.history.replaceState({}, '', buildShareUrl(gameId)); }
+  return { generateId, getGameIdFromUrl, buildShareUrl, pushUrlState };
+})();
+
+// ============================================================
+// SECTION 6 — GAME ENGINE  ← cartridge
+// ============================================================
+const engine = (() => {
+
+  // starting tokens requested
+  const START_TOKENS = [0,1,3,5,8,9,11];
+
+  // adjacency graph for the 2-3-4-3 board
+  const ADJ = {
+    0:[1,2,3],
+    1:[0,3,4],
+    2:[0,3,5,6],
+    3:[0,1,2,4,6,7],
+    4:[1,3,7,8],
+    5:[2,6,9],
+    6:[2,3,5,7,9,10],
+    7:[3,4,6,8,10,11],
+    8:[4,7,11],
+    9:[5,6,10],
+    10:[6,7,9,11],
+    11:[7,8,10]
+  };
+
+  // jump map: A -> [{over:B, land:C}]
+  const JUMPS = {
+    0:[{over:2,land:5},{over:3,land:7}],
+    1:[{over:3,land:6},{over:4,land:8}],
+    2:[{over:3,land:4},{over:6,land:10}],
+    3:[{over:6,land:9},{over:7,land:11}],
+    4:[{over:3,land:2},{over:7,land:10}],
+    5:[{over:6,land:7},{over:2,land:0}],
+    6:[{over:3,land:1},{over:7,land:8}],
+    7:[{over:6,land:5},{over:3,land:0}],
+    8:[{over:7,land:6},{over:4,land:1}],
+    9:[{over:6,land:3}],
+    10:[{over:6,land:2},{over:7,land:4}],
+    11:[{over:7,land:3}]
+  };
+
+  function initState(gameIndex){
+    const board = Array(12).fill('_');
+    START_TOKENS.forEach(i=>board[i]='token');
+
+    return {
+      board,
+      turn: gameIndex % 2 === 0 ? 'blue' : 'red',
+      result:'playing',
+      winner:null,
+      playerBlue:null,
+      playerRed:null,
+      selected:null,
+      moves:[],
+      gameIndex
+    };
+  }
+
+  function legalMoves(board, from){
+    const out=[];
+
+    // slides
+    ADJ[from].forEach(n=>{
+      if(board[n]==='_') out.push(n);
+    });
+
+    // jumps
+    (JUMPS[from]||[]).forEach(j=>{
+      if(board[j.over]==='token' && board[j.land]==='_') out.push(j.land);
+    });
+
+    return out;
+  }
+
+  function applyMove(state, cell, player){
+
+    // freeze after win
+    if(state.result==='win') return state;
+    const board = state.board.slice();
+
+    // tap away from any cell
+    if(cell === null || cell === undefined){
+      return {...state, selected:null, moves:[]};
+    }
+
+    // selecting token
+    if(board[cell]==='token'){
+      // tapping the same token again deselects
+      if(state.selected===cell){
+        return {...state, selected:null, moves:[]};
+      }
+      const moves = legalMoves(board,cell);
+      return {...state, selected:cell, moves};
+    }
+
+    // moving token
+    if(state.selected!==null && state.moves.includes(cell)){
+      board[state.selected]='_';
+      board[cell]='token';
+
+      let result='playing';
+      let winner=null;
+      let winningSet=null;
+
+      // blue = hexagon, red = triangle
+      const hex = HEX_WINS.find(set=>set.every(i=>board[i]==='token'));
+      const tri = TRI_WINS.find(set=>set.every(i=>board[i]==='token'));
+
+      if(hex){
+        result='win';
+        winner='blue';
+        winningSet=hex;
+      }else if(tri){
+        result='win';
+        winner='red';
+        winningSet=tri;
+      }
+
+      return {
+        ...state,
+        board,
+        selected:null,
+        moves:[],
+        result,
+        winner,
+        winningSet,
+        turn: state.turn==='blue'?'red':'blue'
+      };
+    }
+
+    // deselect on any non‑legal tap
+    return {...state, selected:null, moves:[]};
+  }
+
+  // win sets (0‑indexed)
+  const TRI_WINS = [
+    [0,2,3,5,6,7],   // 1-3-4-6-7-8
+    [1,3,4,6,7,8],   // 2-4-5-7-8-9
+    [3,6,7,9,10,11]  // 4-7-8-10-11-12
+  ];
+
+  const HEX_WINS = [
+    [0,1,2,4,6,7],   // 1-2-3-5-7-8
+    [2,3,5,7,9,10],  // 3-4-6-8-10-11
+    [3,4,6,8,10,11]  // 4-5-7-9-11-12
+  ];
+
+  function checkWin(board, type){
+    const sets = type === 'triangle' ? TRI_WINS : HEX_WINS;
+    return sets.some(set => set.every(i => board[i] === 'token'));
+  }
+
+  function getStatus(s){ return {result:s.result,winner:s.winner}; }
+
+  return {initState,applyMove,getStatus};
+})();
+
+// ============================================================
+// SECTION 7 — UI  ← cartridge
+// ============================================================
+const ui = (()=>{
+
+  const SVG_NS='http://www.w3.org/2000/svg';
+
+  const ROWS=[2,3,4,3];
+  const STEP_X=84;
+  const STEP_Y=72.75;
+  const RING_R=40;
+  const TOKEN_R=33;
+  const TOKEN_LIFT_R=40; // when selected it fills the circle
+  const DOT_R=16;        // faint destination dot
+  // shadow removed per request
+  const SHADOW_FILTER='';
+  const START_Y=58;
+  const CENTER_X=210;
+
+  const POSITIONS=[];
+  let idx=0;
+
+  for(let r=0;r<ROWS.length;r++){
+    const count=ROWS[r];
+    const startX=CENTER_X-((count-1)*STEP_X)/2;
+
+    for(let i=0;i<count;i++){
+      POSITIONS[idx++]=[startX+i*STEP_X,START_Y+r*STEP_Y];
+    }
+  }
+
+  function mkEl(tag,attrs){
+    const e=document.createElementNS(SVG_NS,tag);
+    for(const[k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+    return e;
+  }
+
+  let clickHandler=null;
+  let tokenNodes=[];
+  let dotNodes=[];
+  let prevBoard=null;
+  let winShape=null;
+  let activeAnimationToken=null;
+
+  function buildBoard(onMove){
+
+    clickHandler=onMove;
+
+    const svg=document.getElementById('board-svg');
+    svg.setAttribute('viewBox','0 0 420 360');
+    svg.innerHTML='';
+
+    tokenNodes=[];
+    dotNodes=[];
+    prevBoard=null;
+    activeAnimationToken=null;
+
+    svg.addEventListener('click', (e) => {
+      if(e.target === svg) clickHandler(null);
+    });
+
+    POSITIONS.forEach(([cx,cy],i)=>{
+
+      const g=document.createElementNS(SVG_NS,'g');
+
+      const ring=mkEl('circle',{
+        cx,cy,r:RING_R,
+        fill:'#f1f1f1',
+        stroke:'#000','stroke-width':4
+      });
+
+      const token=mkEl('circle',{
+        cx,cy,r:TOKEN_R,
+        fill:'#1e3a8a',
+        visibility:'hidden'
+      });
+
+      const dot=mkEl('circle',{
+        cx,cy,r:DOT_R,
+        fill:'#1e3a8a',
+        opacity:'0.10',
+        visibility:'hidden'
+      });
+
+      g.appendChild(ring);
+      g.appendChild(dot);
+      g.appendChild(token);
+
+      g.addEventListener('click',()=>clickHandler(i));
+
+      svg.appendChild(g);
+
+      tokenNodes.push(token);
+      dotNodes.push(dot);
+
+    });
+  }
+
+  function animateMove(from,to){
+
+    const token=tokenNodes[to];
+    activeAnimationToken=token;
+
+    const [x1,y1]=POSITIONS[from];
+    const [x2,y2]=POSITIONS[to];
+    const dx=x2-x1;
+    const dy=y2-y1;
+    const dist=Math.hypot(dx,dy);
+    const isHop = dist > STEP_X * 1.45;
+    const duration = isHop ? 360 : 180;
+
+    token.setAttribute('cx',x1);
+    token.setAttribute('cy',y1);
+    token.setAttribute('r',TOKEN_R);
+    token.style.filter = SHADOW_FILTER;
+
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const start=performance.now();
+
+    function frame(t){
+      const raw=Math.min(1,(t-start)/duration);
+      const p=ease(raw);
+      const x=x1+dx*p;
+      const y=y1+dy*p;
+      const arc = Math.sin(raw * Math.PI) * (isHop ? 8 : 4);
+      const r = TOKEN_R + Math.sin(raw * Math.PI) * 7;
+
+      token.setAttribute('cx',x);
+      token.setAttribute('cy',y - arc);
+      token.setAttribute('r',r);
+
+      if(raw<1) requestAnimationFrame(frame);
+      else{
+        token.setAttribute('cx',x2);
+        token.setAttribute('cy',y2);
+        token.setAttribute('r',TOKEN_R);
+        token.style.filter = '';
+        activeAnimationToken=null;
+      }
+    }
+
+    requestAnimationFrame(frame);
+
+  }
+
+  function renderBoard(state){
+
+    const svg=document.getElementById('board-svg');
+
+    if(state.result==='win' && state.winningSet && !winShape){
+      drawWinShape(state.winningSet);
+    }
+
+    if(prevBoard){
+      for(let i=0;i<12;i++){
+        if(prevBoard[i]==='token' && state.board[i]==='_'){
+          const from=i;
+          const to=state.board.findIndex((v,j)=>v==='token' && prevBoard[j]==='_');
+          if(to!==-1) animateMove(from,to);
+        }
+      }
+    }
+
+    prevBoard=state.board.slice();
+
+    for(let i=0;i<12;i++){
+
+      const token=tokenNodes[i];
+      const dot=dotNodes[i];
+
+      token.setAttribute('visibility',state.board[i]==='token'?'visible':'hidden');
+
+      if(activeAnimationToken !== token){
+        if(state.selected===i){
+          token.setAttribute('r',TOKEN_LIFT_R);
+          token.style.filter = SHADOW_FILTER;
+        }else{
+          token.setAttribute('r',TOKEN_R);
+          token.style.filter = '';
+        }
+      }
+
+      if(state.moves && state.moves.includes(i)){
+        dot.setAttribute('visibility','visible');
+      }else{
+        dot.setAttribute('visibility','hidden');
+      }
+
+    }
+
+  }
+
+  function renderStatus(state,role){
+
+    if(state.result==='win'){
+      const name = state.winner==='blue' ? 'Hexagon' : 'Triangle';
+      document.getElementById('turn-indicator').textContent = name + ' Wins!';
+      document.getElementById('game-status').textContent='';
+      document.getElementById('btn-again').classList.remove('hidden');
+      return;
+    }
+
+    const el=document.getElementById('turn-indicator');
+
+    const roleName = state.turn==='blue' ? 'Hexagon' : 'Triangle';
+
+    if(role==='spectator'){
+      // local play on same device
+      el.textContent = `${roleName}'s Turn`;
+    }else{
+      const yourRoleName = role==='blue' ? 'Hexagon' : 'Triangle';
+      const oppRoleName  = role==='blue' ? 'Triangle' : 'Hexagon';
+
+      if(role===state.turn){
+        el.textContent = `Your Turn (${yourRoleName})`;
+      }else{
+        el.textContent = `Opponent's Turn (${oppRoleName})`;
+      }
+    }
+
+    document.getElementById('game-status').textContent='Tap a token, then choose a destination.';
+
+    document.getElementById('btn-again').classList.add('hidden');
+
+  }
+
+  function drawWinShape(set){
+
+    const svg=document.getElementById('board-svg');
+
+    const poly=document.createElementNS(SVG_NS,'polygon');
+
+    const pts=set.map(i=>{
+      const [x,y]=POSITIONS[i];
+      return x+','+y;
+    }).join(' ');
+
+    poly.setAttribute('points',pts);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','#16a34a');
+    poly.setAttribute('stroke-width','6');
+    poly.setAttribute('stroke-linejoin','round');
+
+    svg.appendChild(poly);
+
+    const length=poly.getTotalLength();
+
+    poly.style.strokeDasharray=length;
+    poly.style.strokeDashoffset=length;
+    poly.getBoundingClientRect();
+
+    poly.style.transition='stroke-dashoffset 0.35s ease-out';
+    poly.style.strokeDashoffset='0';
+
+    winShape=poly;
+  }
+
+  function clearAnimations(){
+    prevBoard=null;
+    activeAnimationToken=null;
+  }
+
+  return {buildBoard,renderBoard,renderStatus,clearAnimations};
+})();
+
+// ============================================================
+// SECTION 8 — SHELL STARTUP
+// ============================================================
+(function startup() {
+  const screenLobby = document.getElementById('screen-lobby');
+  const screenGame  = document.getElementById('screen-game');
+  function showLobby() { screenLobby.classList.remove('hidden'); screenGame.classList.add('hidden'); }
+  function showGame()  { screenLobby.classList.add('hidden'); screenGame.classList.remove('hidden'); }
+
+  let currentState = null, currentRole = 'spectator', currentGameId = null, isLocal = false;
+
+  function normalizeState(state) {
+    if (!state) return state;
+    if (state.board && !Array.isArray(state.board)) {
+      const arr = [];
+      for (let i = 0; i < 12; i++) arr[i] = state.board[i] || '_' ;
+      state.board = arr;
+    }
+    if (!state.scores) state.scores = { blue: 0, red: 0 };
+    return state;
+  }
+
+  function handleMove(cell) {
+    if (!currentState) { console.log('NO STATE'); return; }
+    const state = currentState;
+    const role = currentRole;
+    const isLoc = isLocal;
+    console.log('HM cell:', cell, 'turn:', state.turn, 'role:', role, 'local:', isLoc);
+    if (isLoc) {
+      const next = engine.applyMove(state, cell, 'spectator');
+      if (!next) { console.log('LOCAL applyMove null'); return; }
+      currentState = next;
+      ui.renderBoard(currentState, 'spectator');
+      ui.renderStatus(currentState, 'spectator');
+      return;
+    }
+    console.log('REMOTE PATH — about to check turn');
+    if (state.turn !== role) { console.log('TURN MISMATCH'); return; }
+    console.log('TURN OK — calling applyMove');
+    const next = engine.applyMove(state, cell, role);
+    console.log('applyMove returned:', next ? 'state' : 'null');
+    if (!next) return;
+    next.playerBlue = state.playerBlue;
+    next.playerRed  = state.playerRed;
+    syncAdapter.push(currentGameId, next);
+  }
+
+  function startLocalGame() {
+    isLocal = true;
+    syncAdapter.unsubscribe();
+    currentGameId = null;
+    const gi = currentState ? (currentState.gameIndex || 0) + 1 : 0;
+    currentState = engine.initState(gi);
+    currentRole  = 'spectator';
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState, 'spectator');
+    ui.renderStatus(currentState, 'spectator');
+    showGame();
+  }
+
+  function startRemoteGame(gameId, state) {
+    isLocal       = false;
+    currentGameId = gameId;
+    currentState  = normalizeState(state);
+    currentRole   = identity.getRole(currentState);
+    ui.buildBoard(handleMove);
+    ui.renderBoard(currentState, currentRole);
+    ui.renderStatus(currentState, currentRole);
+    showGame();
+    syncAdapter.onStateChange(gameId, remote => {
+      currentState = normalizeState(remote);
+      currentRole  = identity.getRole(currentState);
+      ui.renderBoard(currentState, currentRole);
+      ui.renderStatus(currentState, currentRole);
+    });
+  }
+
+  function createRemoteGame() {
+    if (!syncAdapter.ready) { alert("Firebase isn't configured.\n\nFill in Section 2, or use 'Play on This Device'."); return; }
+    const gameId = lobby.generateId();
+    const state  = engine.initState(0);
+    state.playerBlue = identity.id;
+    lobby.pushUrlState(gameId);
+    document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
+    document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('btn-challenge').classList.add('hidden');
+    document.getElementById('lobby-status').textContent = 'Waiting for your friend…';
+    syncAdapter.push(gameId, state);
+    syncAdapter.onStateChange(gameId, remote => {
+      // Use playerRed + gameIndex (always present) to detect join — avoids
+      // Firebase null-stripping the empty board array making remote.board falsy
+      if (remote.playerRed && remote.gameIndex !== undefined) {
+        document.getElementById('lobby-status').textContent = 'Friend joined!';
+        syncAdapter.unsubscribe();
+        startRemoteGame(gameId, remote);
+      }
+    });
+  }
+
+  function joinRemoteGame(gameId) {
+    if (!syncAdapter.ready) { alert("Firebase isn't configured."); showLobby(); return; }
+    showLobby();
+    document.getElementById('link-panel').classList.add('visible');
+    document.getElementById('share-url').textContent = lobby.buildShareUrl(gameId);
+    document.getElementById('lobby-status').textContent = 'Joining game…';
+    firebase.database().ref('trollhole/' + gameId).once('value').then(snap => {
+      if (!snap.exists()) { document.getElementById('lobby-status').textContent = 'Game not found.'; return; }
+      const state = snap.val();
+      if (state.playerBlue === identity.id) { startRemoteGame(gameId, state); return; }
+      if (!state.playerRed) { state.playerRed = identity.id; syncAdapter.push(gameId, state); }
+      startRemoteGame(gameId, state);
+    }).catch(err => {
+      console.error('Join error:', err);
+      document.getElementById('lobby-status').textContent = 'Connection error. Please try again.';
+    });
+  }
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('share-url').textContent).then(() => {
+      const b = document.getElementById('copy-btn'); b.textContent = 'Copied!';
+      setTimeout(() => b.textContent = 'Copy', 1800);
+    });
+  });
+
+  document.getElementById('btn-again').addEventListener('click', () => {
+    if (isLocal) { startLocalGame(); return; }
+    const gi = (currentState.gameIndex || 0) + 1;
+    const fresh = engine.initState(gi);
+    fresh.playerBlue = currentState.playerBlue;
+    fresh.playerRed  = currentState.playerRed;
+    syncAdapter.push(currentGameId, fresh);
+  });
+
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    syncAdapter.unsubscribe(); isLocal = false;
+    ui.clearAnimations();
+    const u = new URL(window.location.href); u.searchParams.delete('game');
+    window.history.replaceState({}, '', u.toString());
+    document.getElementById('link-panel').classList.remove('visible');
+    document.getElementById('btn-challenge').classList.remove('hidden');
+    showLobby();
+  });
+
+  document.getElementById('btn-local').addEventListener('click', startLocalGame);
+  document.getElementById('btn-challenge').addEventListener('click', createRemoteGame);
+
+  const gid = lobby.getGameIdFromUrl();
+  if (gid) joinRemoteGame(gid); else showLobby();
+})();
+</script>
+</body>
+</html>
